@@ -1,0 +1,175 @@
+import 'package:flutter/material.dart';
+import 'package:note_tracking_app/Core/Provider/note_provider.dart';
+import 'package:note_tracking_app/Module/Home/Screens/home_screen.dart';
+import 'package:note_tracking_app/Module/Login%20Screen/Screens/login_screen.dart';
+import 'package:note_tracking_app/Module/Login%20Screen/Widget/button_widget.dart';
+import 'package:note_tracking_app/Module/Login%20Screen/Widget/divider_widget.dart';
+import 'package:note_tracking_app/Module/Welcome/Widget/image_widget.dart';
+import 'package:note_tracking_app/Module/Welcome/Widget/text_field.dart';
+import 'package:note_tracking_app/Module/Welcome/Widget/text_widget.dart';
+import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
+import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
+import 'package:provider/provider.dart';
+
+class WelcomeScreen extends StatefulWidget {
+  const WelcomeScreen({super.key});
+
+  @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  @override
+  Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
+    final provider = Provider.of<NoteProvider>(context);
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: (provider.edit == true)
+          ? AppBar(
+              surfaceTintColor: AppColors.background,
+              backgroundColor: AppColors.background,
+              leading: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Icon(
+                    Icons.arrow_back,
+                    color: AppColors.title,
+                    size: 26,
+                  ),
+                ),
+              ),
+              centerTitle: true,
+              title: TextWidget(
+                color: AppColors.title,
+                size: 24,
+                text: AppStrings.editProfile,
+                weight: FontWeight.w600,
+              ),
+            )
+          : null,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(
+            left: 26.0,
+            right: 26,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: (provider.edit == false) ? 60 : 40,
+                ),
+                if (provider.edit == false) ...[
+                  TextWidget(
+                    color: AppColors.title,
+                    size: 46,
+                    text: AppStrings.remind,
+                    weight: FontWeight.bold,
+                  ),
+                  TextWidget(
+                    color: AppColors.noteTaking,
+                    size: 16,
+                    text: AppStrings.notetaking,
+                    weight: FontWeight.bold,
+                  ),
+                  SizedBox(
+                    height: height * 0.09,
+                  ),
+                ],
+                ImageWidget(),
+                SizedBox(
+                  height: height * 0.02,
+                ),
+                SizedBox(
+                  height: 16,
+                ),
+                TextFieldWidget(
+                  text: AppStrings.name,
+                  hint: AppStrings.name,
+                ),
+                SizedBox(
+                  height: 16,
+                ),
+                TextFieldWidget(
+                  text: AppStrings.email,
+                  hint: AppStrings.emailText,
+                ),
+                if (provider.edit == false) ...[
+                  SizedBox(
+                    height: 16,
+                  ),
+                  TextFieldWidget(
+                    text: AppStrings.password,
+                    hint: AppStrings.passwordText,
+                  ),
+                  SizedBox(
+                    height: 16,
+                  ),
+                  TextFieldWidget(
+                    text: AppStrings.repeatPassword,
+                    hint: AppStrings.passwordText,
+                  ),
+                ],
+                SizedBox(
+                  height: 38,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    if (provider.edit == false) {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => HomeScreen(),
+                        ),
+                      );
+                    } else {
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: ButtonWidget(
+                    text: (provider.edit == false)
+                        ? AppStrings.start
+                        : AppStrings.save,
+                  ),
+                ),
+                if (provider.edit == false) ...[
+                  SizedBox(
+                    height: 12,
+                  ),
+                  DividerWidget(),
+                  SizedBox(
+                    height: 12,
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (context) => LoginScreen(),
+                        ),
+                      );
+                    },
+                    child: Builder(
+                      builder: (context) {
+                        return ButtonWidget(
+                          text: AppStrings.login,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+                SizedBox(
+                  height: 6,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
