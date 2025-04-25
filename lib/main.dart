@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/note_provider.dart';
-import 'package:note_tracking_app/Module/Welcome/Screens/welcome_screen.dart';
+import 'package:note_tracking_app/Module/Login%20Screen/Screens/login_screen.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -17,10 +18,13 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => NoteProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (context) => AuthProvider(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: WelcomeScreen(),
+        home: LoginScreen(),
       ),
     );
   }

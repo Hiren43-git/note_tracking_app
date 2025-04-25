@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:note_tracking_app/Core/Model/Auth%20Model/auth_model.dart';
+import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Home/Screens/home_screen.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Screens/login_screen.dart';
@@ -20,9 +22,67 @@ class WelcomeScreen extends StatefulWidget {
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    AuthProvider().name.dispose();
+    AuthProvider().email.dispose();
+    AuthProvider().password.dispose();
+    AuthProvider().confirmPassword.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
+    final authProvider = Provider.of<AuthProvider>(context);
     final provider = Provider.of<NoteProvider>(context);
+
+    final key = GlobalKey<FormState>();
+    void register() async {
+      if (key.currentState!.validate()) {
+        if (AuthProvider().image == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Please select image !',
+              ),
+            ),
+          );
+        }
+        final authProvider = Provider.of(context, listen: false);
+
+        final user = AuthModel(
+          name: authProvider.name.text,
+          email: authProvider.email.text,
+          password: authProvider.password.text,
+          image: authProvider.image!.path,
+        );
+        final result = await authProvider.signUp(user);
+
+        if (result == 'success') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Signup Successfully !',
+              ),
+            ),
+          );
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => LoginScreen(),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                result,
+              ),
+            ),
+          );
+        }
+      }
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -58,114 +118,125 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             left: 26.0,
             right: 26,
           ),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: (provider.edit == false) ? 60 : 40,
-                ),
-                if (provider.edit == false) ...[
-                  TextWidget(
-                    color: AppColors.title,
-                    size: 46,
-                    text: AppStrings.remind,
-                    weight: FontWeight.bold,
-                  ),
-                  TextWidget(
-                    color: AppColors.noteTaking,
-                    size: 16,
-                    text: AppStrings.notetaking,
-                    weight: FontWeight.bold,
-                  ),
+          child: Form(
+            key: key,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   SizedBox(
-                    height: height * 0.09,
+                    height: (provider.edit == false) ? 60 : 40,
                   ),
-                ],
-                ImageWidget(),
-                SizedBox(
-                  height: height * 0.02,
-                ),
-                SizedBox(
-                  height: 16,
-                ),
-                TextFieldWidget(
-                  text: AppStrings.name,
-                  hint: AppStrings.name,
-                ),
-                SizedBox(
-                  height: 16,
-                ),
-                TextFieldWidget(
-                  text: AppStrings.email,
-                  hint: AppStrings.emailText,
-                ),
-                if (provider.edit == false) ...[
+                  if (provider.edit == false) ...[
+                    TextWidget(
+                      color: AppColors.title,
+                      size: 46,
+                      text: AppStrings.remind,
+                      weight: FontWeight.bold,
+                    ),
+                    TextWidget(
+                      color: AppColors.noteTaking,
+                      size: 16,
+                      text: AppStrings.notetaking,
+                      weight: FontWeight.bold,
+                    ),
+                    SizedBox(
+                      height: height * 0.09,
+                    ),
+                  ],
+                  ImageWidget(),
                   SizedBox(
-                    height: 16,
-                  ),
-                  TextFieldWidget(
-                    text: AppStrings.password,
-                    hint: AppStrings.passwordText,
+                    height: height * 0.02,
                   ),
                   SizedBox(
                     height: 16,
                   ),
                   TextFieldWidget(
-                    text: AppStrings.repeatPassword,
-                    hint: AppStrings.passwordText,
+                    controller: authProvider.name,
+                    validator: (value) => value,
+                    text: AppStrings.name,
+                    hint: AppStrings.name,
                   ),
-                ],
-                SizedBox(
-                  height: 38,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    if (provider.edit == false) {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => HomeScreen(),
-                        ),
-                      );
-                    } else {
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: ButtonWidget(
-                    text: (provider.edit == false)
-                        ? AppStrings.start
-                        : AppStrings.save,
-                  ),
-                ),
-                if (provider.edit == false) ...[
                   SizedBox(
-                    height: 12,
+                    height: 16,
                   ),
-                  DividerWidget(),
+                  TextFieldWidget(
+                    validator: (value) => value,
+                    controller: authProvider.email,
+                    text: AppStrings.email,
+                    hint: AppStrings.emailText,
+                  ),
+                  if (provider.edit == false) ...[
+                    SizedBox(
+                      height: 16,
+                    ),
+                    TextFieldWidget(
+                      validator: (value) => value,
+                      controller: authProvider.password,
+                      text: AppStrings.password,
+                      hint: AppStrings.passwordText,
+                    ),
+                    SizedBox(
+                      height: 16,
+                    ),
+                    TextFieldWidget(
+                      validator: (value) => value,
+                      controller: authProvider.confirmPassword,
+                      text: AppStrings.repeatPassword,
+                      hint: AppStrings.passwordText,
+                    ),
+                  ],
                   SizedBox(
-                    height: 12,
+                    height: 38,
                   ),
                   GestureDetector(
                     onTap: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => LoginScreen(),
-                        ),
-                      );
-                    },
-                    child: Builder(
-                      builder: (context) {
-                        return ButtonWidget(
-                          text: AppStrings.login,
+                      if (provider.edit == false) {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => HomeScreen(),
+                          ),
                         );
-                      },
+                      } else {
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: ButtonWidget(
+                      text: (provider.edit == false)
+                          ? AppStrings.start
+                          : AppStrings.save,
                     ),
                   ),
+                  if (provider.edit == false) ...[
+                    SizedBox(
+                      height: 12,
+                    ),
+                    DividerWidget(),
+                    SizedBox(
+                      height: 12,
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => LoginScreen(),
+                          ),
+                        );
+                      },
+                      child: Builder(
+                        builder: (context) {
+                          return ButtonWidget(
+                            text: AppStrings.login,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                  SizedBox(
+                    height: 6,
+                  ),
                 ],
-                SizedBox(
-                  height: 6,
-                ),
-              ],
+              ),
             ),
           ),
         ),

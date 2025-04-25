@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:note_tracking_app/Core/Database%20Service/database_service.dart';
+import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Module/Home/Screens/home_screen.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Widget/button_widget.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Widget/divider_widget.dart';
@@ -7,6 +9,7 @@ import 'package:note_tracking_app/Module/Welcome/Widget/text_field.dart';
 import 'package:note_tracking_app/Module/Welcome/Widget/text_widget.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,7 +20,16 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    DbHelper.helper.initDatabase();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: true);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: null,
@@ -41,6 +53,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 16,
                 ),
                 TextFieldWidget(
+                  validator: (value) => value,
+                  controller: authProvider.email,
                   text: AppStrings.email,
                   hint: AppStrings.emailText,
                 ),
@@ -48,6 +62,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 16,
                 ),
                 TextFieldWidget(
+                  validator: (value) => value,
+                  controller: authProvider.password,
                   text: AppStrings.password,
                   hint: AppStrings.passwordText,
                 ),
