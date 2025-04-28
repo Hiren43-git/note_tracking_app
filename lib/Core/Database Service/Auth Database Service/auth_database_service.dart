@@ -43,12 +43,12 @@ class AuthDatabaseService {
     );
   }
 
-  Future<AuthModel?> getUserById(int id) async {
+  Future<AuthModel?> getUserById(String email) async {
     final dbClient = await dbHelper.database;
     List<Map<String, dynamic>> result = await dbClient!.query(
       'users',
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'email = ?',
+      whereArgs: [email],
     );
     if (result.isNotEmpty) {
       return AuthModel.fromMap(result.first);

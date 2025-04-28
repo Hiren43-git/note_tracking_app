@@ -14,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  @override
   Widget build(BuildContext context) {
     final provider = Provider.of<NoteProvider>(context);
     return DefaultTabController(
@@ -97,7 +98,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                 ],
               ),
-        body: provider.screen[provider.selectedIndexOfBottom],
+        body: Consumer<NoteProvider>(
+          builder: (context, value, child) =>
+              provider.screen[provider.selectedIndexOfBottom],
+        ),
         bottomNavigationBar: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

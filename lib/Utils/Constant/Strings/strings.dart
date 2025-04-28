@@ -35,5 +35,6 @@ class AppStrings {
   static String viewMore = ' View more';
   static String viewLess = ' View less';
   static String login = 'Login';
-  static String logout = 'Sign up';
+  static String signUp = 'Sign up';
+  static String logout = 'Logout';
 }

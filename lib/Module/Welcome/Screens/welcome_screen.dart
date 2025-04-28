@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Model/Auth%20Model/auth_model.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/note_provider.dart';
-import 'package:note_tracking_app/Module/Home/Screens/home_screen.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Screens/login_screen.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Widget/button_widget.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Widget/divider_widget.dart';
@@ -49,13 +48,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             ),
           );
         }
-        final authProvider = Provider.of(context, listen: false);
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
         final user = AuthModel(
           name: authProvider.name.text,
           email: authProvider.email.text,
           password: authProvider.password.text,
-          image: authProvider.image!.path,
+          image: (authProvider.image != null) ? authProvider.image!.path : '',
         );
         final result = await authProvider.signUp(user);
 
@@ -153,7 +152,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   ),
                   TextFieldWidget(
                     controller: authProvider.name,
-                    validator: (value) => value,
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Enter your name'
+                        : null,
                     text: AppStrings.name,
                     hint: AppStrings.name,
                   ),
@@ -161,7 +162,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     height: 16,
                   ),
                   TextFieldWidget(
-                    validator: (value) => value,
+                    validator: (value) =>
+                        value == null || !value.contains('@gmail.com')
+                            ? 'Enter valid email'
+                            : null,
                     controller: authProvider.email,
                     text: AppStrings.email,
                     hint: AppStrings.emailText,
@@ -171,7 +175,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       height: 16,
                     ),
                     TextFieldWidget(
-                      validator: (value) => value,
+                      validator: (value) => value == null || value.length < 6
+                          ? 'Password too short'
+                          : null,
                       controller: authProvider.password,
                       text: AppStrings.password,
                       hint: AppStrings.passwordText,
@@ -180,7 +186,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       height: 16,
                     ),
                     TextFieldWidget(
-                      validator: (value) => value,
+                      validator: (value) => value != authProvider.password.text
+                          ? 'Password do not match'
+                          : null,
                       controller: authProvider.confirmPassword,
                       text: AppStrings.repeatPassword,
                       hint: AppStrings.passwordText,
@@ -192,11 +200,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   GestureDetector(
                     onTap: () {
                       if (provider.edit == false) {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => HomeScreen(),
-                          ),
-                        );
+                        register();
+                        authProvider.password.clear();
+                        authProvider.name.clear();
+                        authProvider.confirmPassword.clear();
+                        authProvider.email.clear();
                       } else {
                         Navigator.pop(context);
                       }

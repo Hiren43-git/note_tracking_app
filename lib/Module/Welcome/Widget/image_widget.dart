@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:provider/provider.dart';
 
@@ -13,9 +14,10 @@ class _ImageWidgetState extends State<ImageWidget> {
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
-    final authProvider = Provider.of(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     return Stack(
+      alignment: Alignment.bottomRight,
       children: [
         Container(
           height: width * 0.266,
@@ -26,7 +28,7 @@ class _ImageWidgetState extends State<ImageWidget> {
             image: DecorationImage(
               fit: BoxFit.cover,
               image: (authProvider.image != null)
-                  ? FileImage(authProvider.image)
+                  ? FileImage(authProvider.image!)
                   : AssetImage(
                       'assets/Images/manager.png',
                     ),
@@ -37,9 +39,11 @@ class _ImageWidgetState extends State<ImageWidget> {
           onTap: () {
             authProvider.pickImage();
           },
-          child: Positioned(
-            bottom: width * 0.016,
-            right: width * 0.0053,
+          child: Padding(
+            padding: EdgeInsets.only(
+              right: width * 0.01,
+              bottom: width * 0.006,
+            ),
             child: Container(
               height: width * 0.07,
               width: width * 0.07,
