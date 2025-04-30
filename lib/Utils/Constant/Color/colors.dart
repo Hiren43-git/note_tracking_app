@@ -22,4 +22,5 @@ class AppColors {
   static Color cardColor3 = Colors.amber.shade100;
   static Color cardColor4 = Colors.blue.shade100;
   static Color cardColor5 = Colors.green.shade100;
+  static Color red = Colors.red;
 }

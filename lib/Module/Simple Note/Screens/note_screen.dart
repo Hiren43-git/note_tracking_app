@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:note_tracking_app/Core/Model/Note%20Model/note_model.dart';
+import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Widget/note.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Widget/styleButton.dart';
@@ -10,7 +12,8 @@ import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
 import 'package:provider/provider.dart';
 
 class NoteScreen extends StatefulWidget {
-  const NoteScreen({super.key});
+  final NoteModel? note;
+  const NoteScreen({super.key, this.note});
 
   @override
   State<NoteScreen> createState() => _NoteScreenState();
@@ -21,6 +24,7 @@ class _NoteScreenState extends State<NoteScreen> {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     final provider = Provider.of<NoteProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
       backgroundColor: AppColors.title,
@@ -42,37 +46,73 @@ class _NoteScreenState extends State<NoteScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
-            child: Container(
-              height: 36,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(
-                  20,
-                ),
-                color: AppColors.button,
-              ),
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    TextWidget(
-                      color: AppColors.title,
-                      size: 16,
-                      text: AppStrings.save,
-                      weight: FontWeight.bold,
-                    ),
-                    SizedBox(
-                      width: 8,
-                    ),
-                    Image(
-                      height: 18,
-                      image: AssetImage(
-                        'assets/Images/Icons/check.png',
+            child: GestureDetector(
+              onTap: () async {
+                if (provider.simple == true) {
+                  if (provider.title.text.isEmpty &&
+                      provider.description.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Add note data !',
+                        ),
                       ),
-                    ),
-                  ],
+                    );
+                  } else {
+                    provider.addNotes(
+                      NoteModel(
+                        userId: authProvider.currentUser!.id!,
+                        title: provider.title.text,
+                        description: provider.description.text,
+                      ),
+                    );
+                    provider.title.clear();
+                    provider.description.clear();
+                  }
+                  if (widget.note != null) {
+                    final update = NoteModel(
+                      id: widget.note!.id,
+                      userId: widget.note!.userId,
+                      title: provider.title.text,
+                      description: provider.description.text,
+                    );
+                    await provider.updateNote(update);
+                  }
+                }
+                Navigator.of(context).pop();
+              },
+              child: Container(
+                height: 36,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(
+                    20,
+                  ),
+                  color: AppColors.button,
+                ),
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      TextWidget(
+                        color: AppColors.title,
+                        size: 16,
+                        text: AppStrings.save,
+                        weight: FontWeight.bold,
+                      ),
+                      SizedBox(
+                        width: 8,
+                      ),
+                      Image(
+                        height: 18,
+                        image: AssetImage(
+                          'assets/Images/Icons/check.png',
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -89,6 +129,7 @@ class _NoteScreenState extends State<NoteScreen> {
               ),
               if (provider.simple == true)
                 TextField(
+                  controller: provider.title,
                   style: provider.textStyle.copyWith(
                       color: provider.textColor,
                       decorationColor: provider.textColor),
@@ -106,6 +147,7 @@ class _NoteScreenState extends State<NoteScreen> {
                 ),
               if (provider.simple == true)
                 TextField(
+                  controller: provider.description,
                   style: provider.textStyle.copyWith(
                       color: provider.textColor,
                       decorationColor: provider.textColor),
