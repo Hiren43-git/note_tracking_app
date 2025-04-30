@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:note_tracking_app/Core/Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Screens/note_screen.dart';
 import 'package:note_tracking_app/Module/Welcome/Widget/text_widget.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
+import 'package:provider/provider.dart';
 
 class AddWidget extends StatefulWidget {
   const AddWidget({super.key});
@@ -14,6 +16,8 @@ class AddWidget extends StatefulWidget {
 class _AddWidgetState extends State<AddWidget> {
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<NoteProvider>(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(26.0),
@@ -47,8 +51,8 @@ class _AddWidgetState extends State<AddWidget> {
                         builder: (context) => NoteScreen(),
                       ),
                     );
-                    list = false;
-                    simple = true;
+                    provider.list = false;
+                    provider.simple = true;
                   },
                   child: TextWidget(
                     color: AppColors.text,
@@ -67,8 +71,8 @@ class _AddWidgetState extends State<AddWidget> {
                         builder: (context) => NoteScreen(),
                       ),
                     );
-                    list = true;
-                    simple = false;
+                    provider.list = true;
+                    provider.simple = false;
                   },
                   child: TextWidget(
                     color: AppColors.text,
@@ -85,6 +89,3 @@ class _AddWidgetState extends State<AddWidget> {
     );
   }
 }
-
-bool simple = false;
-bool list = false;

@@ -26,7 +26,7 @@ class _NoteWidgetState extends State<NoteWidget> {
           width: 28,
           decoration: BoxDecoration(
             border: Border.all(
-              color: (provider.notes[widget.index].text.isEmpty)
+              color: (provider.notesController[widget.index].text.isEmpty)
                   ? AppColors.divider
                   : provider.textColor,
               width: 1,
@@ -39,8 +39,8 @@ class _NoteWidgetState extends State<NoteWidget> {
         ),
         Expanded(
           child: TextField(
-            controller: provider.notes[widget.index],
-            style: (provider.notes[widget.index].text.isNotEmpty)
+            controller: provider.notesController[widget.index],
+            style: (provider.notesController[widget.index].text.isNotEmpty)
                 ? provider.textStyle.copyWith(
                     color: provider.textColor,
                     decorationColor: provider.textColor)

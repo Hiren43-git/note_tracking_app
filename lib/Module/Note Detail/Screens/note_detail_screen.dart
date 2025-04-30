@@ -9,7 +9,8 @@ import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
 import 'package:provider/provider.dart';
 
 class NoteDetailScreen extends StatefulWidget {
-  const NoteDetailScreen({super.key});
+  final int index;
+  const NoteDetailScreen({super.key, required this.index});
 
   @override
   State<NoteDetailScreen> createState() => _NoteDetailScreenState();
@@ -18,7 +19,7 @@ class NoteDetailScreen extends StatefulWidget {
 class _NoteDetailScreenState extends State<NoteDetailScreen> {
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<NoteProvider>(context);
+    // final provider = Provider.of<NoteProvider>(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -53,103 +54,117 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 26.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 20,
-              ),
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.textFieldBackground,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextWidget(
-                            color: AppColors.title,
-                            size: 20,
-                            text: 'fewrf edfsdffdf',
-                            weight: FontWeight.bold,
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => NoteScreen(),
-                                ),
-                              );
-                            },
-                            child: Icon(
-                              Icons.edit,
-                              color: AppColors.title,
-                              size: 18,
-                            ),
-                          ),
-                        ],
+        child: Consumer<NoteProvider>(
+          builder: (context, provider, child) {
+            return SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 20,
+                  ),
+                  GestureDetector(
+                    onLongPress: () {
+                      provider.deleteNote(provider.notes[widget.index].id!);
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.textFieldBackground,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      SizedBox(
-                        height: 6,
-                      ),
-                      Divider(
-                        thickness: 0.2,
-                        color: AppColors.detailCardDivider,
-                      ),
-                      SizedBox(
-                        height: 8,
-                      ),
-                      RichText(
-                        text: TextSpan(
-                          text: (provider.viewMore)
-                              ? 'fewrf edfsdffdf fdsf fsdf sdf dfdfsdfd dsfds dfd dfdsf dffds fsfd sfddfdfsfdsfsdf fsddsfsdfsdfd'
-                              : trimText(
-                                  'fewrf edfsdffdf fdsf fsdf sdf dfdfsdfd dsfds dfd dfdsf dffds fsfd fsdfdfffffsf fdsfsdfsdfsdfdsf',
-                                  TextStyle(
-                                    color: AppColors.description,
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                  context,
-                                ),
-                          style: TextStyle(
-                            color: AppColors.description,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w400,
-                          ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            TextSpan(
-                              text: provider.viewMore
-                                  ? AppStrings.viewLess
-                                  : AppStrings.viewMore,
-                              style: TextStyle(
-                                color: AppColors.title,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                TextWidget(
+                                  color: AppColors.title,
+                                  size: 20,
+                                  text: provider.notes[widget.index].title,
+                                  weight: FontWeight.bold,
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => NoteScreen(
+                                          note: provider.notes[widget.index],
+                                        ),
+                                      ),
+                                    );
+                                    provider.simple = true;
+                                  },
+                                  child: Icon(
+                                    Icons.edit,
+                                    color: AppColors.title,
+                                    size: 18,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 6,
+                            ),
+                            Divider(
+                              thickness: 0.2,
+                              color: AppColors.detailCardDivider,
+                            ),
+                            SizedBox(
+                              height: 8,
+                            ),
+                            RichText(
+                              text: TextSpan(
+                                text: (provider.viewMore)
+                                    ? provider.notes[widget.index].description
+                                    : trimText(
+                                        provider
+                                            .notes[widget.index].description,
+                                        TextStyle(
+                                          color: AppColors.description,
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                        context,
+                                      ),
+                                style: TextStyle(
+                                  color: AppColors.description,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: provider.viewMore
+                                        ? AppStrings.viewLess
+                                        : AppStrings.viewMore,
+                                    style: TextStyle(
+                                      color: AppColors.title,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap =
+                                          () => provider.descriptionShow(),
+                                  ),
+                                ],
                               ),
-                              recognizer: TapGestureRecognizer()
-                                ..onTap = () => provider.descriptionShow(),
                             ),
                           ],
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                  SizedBox(
+                    height: 16,
+                  ),
+                ],
               ),
-              SizedBox(
-                height: 16,
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
       floatingActionButton: GestureDetector(
