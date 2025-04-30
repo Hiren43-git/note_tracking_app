@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class TextWidget extends StatefulWidget {
@@ -8,6 +7,7 @@ class TextWidget extends StatefulWidget {
   final TextOverflow? overflow;
   final int? line;
   final FontWeight? weight;
+  final double? height;
   const TextWidget(
       {super.key,
       required this.color,
@@ -15,7 +15,8 @@ class TextWidget extends StatefulWidget {
       required this.text,
       this.weight,
       this.overflow,
-      this.line});
+      this.line,
+      this.height});
 
   @override
   State<TextWidget> createState() => _TextWidgetState();
@@ -30,7 +31,8 @@ class _TextWidgetState extends State<TextWidget> {
           color: widget.color,
           fontWeight: widget.weight,
           fontSize: widget.size,
-          overflow: widget.overflow),
+          overflow: widget.overflow,
+          height: widget.height),
       maxLines: widget.line,
     );
   }

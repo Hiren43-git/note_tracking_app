@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:note_tracking_app/Core/Provider/note_provider.dart';
+import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Welcome/Screens/welcome_screen.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';

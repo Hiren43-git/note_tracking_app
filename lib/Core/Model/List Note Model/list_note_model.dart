@@ -25,7 +25,7 @@ class ListNoteModel {
       id: m1['id'],
       userId: m1['userId'],
       title: m1['title'],
-      points: (m1['points'] as String).split('|'),
+      points: m1['points'].toString().split('|'),
     );
   }
 }

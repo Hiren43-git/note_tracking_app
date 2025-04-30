@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:note_tracking_app/Core/Model/List%20Note%20Model/list_note_model.dart';
 import 'package:note_tracking_app/Core/Model/Note%20Model/note_model.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
-import 'package:note_tracking_app/Core/Provider/note_provider.dart';
+import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
+import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Widget/note.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Widget/styleButton.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Widget/styleColor.dart';
+import 'package:note_tracking_app/Module/Simple%20Note/Widget/textField_widget.dart';
 import 'package:note_tracking_app/Module/Welcome/Widget/text_widget.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
@@ -13,7 +16,8 @@ import 'package:provider/provider.dart';
 
 class NoteScreen extends StatefulWidget {
   final NoteModel? note;
-  const NoteScreen({super.key, this.note});
+  final ListNoteModel? listNote;
+  const NoteScreen({super.key, this.note, this.listNote});
 
   @override
   State<NoteScreen> createState() => _NoteScreenState();
@@ -21,9 +25,27 @@ class NoteScreen extends StatefulWidget {
 
 class _NoteScreenState extends State<NoteScreen> {
   @override
+  void initState() {
+    super.initState();
+    if (widget.note != null) {
+      Provider.of<NoteProvider>(context, listen: false).title.text =
+          widget.note!.title;
+      Provider.of<NoteProvider>(context, listen: false).description.text =
+          widget.note!.description;
+    }
+    if (widget.listNote != null) {
+      Provider.of<ListNoteProvider>(context, listen: false).listTitle.text =
+          widget.listNote!.title;
+      Provider.of<ListNoteProvider>(context, listen: false).listTitle.text =
+          widget.listNote!.title;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     final provider = Provider.of<NoteProvider>(context);
+    final listProvider = Provider.of<ListNoteProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
@@ -49,26 +71,6 @@ class _NoteScreenState extends State<NoteScreen> {
             child: GestureDetector(
               onTap: () async {
                 if (provider.simple == true) {
-                  if (provider.title.text.isEmpty &&
-                      provider.description.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Add note data !',
-                        ),
-                      ),
-                    );
-                  } else {
-                    provider.addNotes(
-                      NoteModel(
-                        userId: authProvider.currentUser!.id!,
-                        title: provider.title.text,
-                        description: provider.description.text,
-                      ),
-                    );
-                    provider.title.clear();
-                    provider.description.clear();
-                  }
                   if (widget.note != null) {
                     final update = NoteModel(
                       id: widget.note!.id,
@@ -77,7 +79,68 @@ class _NoteScreenState extends State<NoteScreen> {
                       description: provider.description.text,
                     );
                     await provider.updateNote(update);
+                  } else {
+                    if (provider.title.text.isEmpty &&
+                        provider.description.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Add note data !',
+                          ),
+                        ),
+                      );
+                    } else {
+                      provider.addNotes(
+                        NoteModel(
+                          userId: authProvider.currentUser!.id!,
+                          title: provider.title.text,
+                          description: provider.description.text,
+                        ),
+                      );
+                    }
                   }
+                  provider.title.clear();
+                  provider.description.clear();
+                }
+                if (provider.list == true) {
+                  if (widget.listNote != null) {
+                    final update = ListNoteModel(
+                      id: widget.listNote!.id,
+                      userId: widget.listNote!.userId,
+                      title: listProvider.listTitle.text,
+                      points: listProvider.notesPointController
+                          .map(
+                            (e) => e.text,
+                          )
+                          .toList(),
+                    );
+                    await listProvider.updateNote(update);
+                  } else {
+                    if (listProvider.listTitle.text.isEmpty &&
+                        listProvider.notesPointController.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Add list note data !',
+                          ),
+                        ),
+                      );
+                    } else {
+                      listProvider.addNotes(
+                        ListNoteModel(
+                          userId: authProvider.currentUser!.id!,
+                          title: listProvider.listTitle.text,
+                          points: listProvider.notesPointController
+                              .map(
+                                (e) => e.text,
+                              )
+                              .toList(),
+                        ),
+                      );
+                    }
+                  }
+                  listProvider.listTitle.clear();
+                  listProvider.notesPointController.clear();
                 }
                 Navigator.of(context).pop();
               },
@@ -128,67 +191,29 @@ class _NoteScreenState extends State<NoteScreen> {
                 height: 34,
               ),
               if (provider.simple == true)
-                TextField(
-                  controller: provider.title,
-                  style: provider.textStyle.copyWith(
-                      color: provider.textColor,
-                      decorationColor: provider.textColor),
-                  cursorHeight: 29,
-                  cursorColor: AppColors.text,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: AppStrings.defaultTitle,
-                    hintStyle: TextStyle(
-                      color: AppColors.divider,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 32,
-                    ),
-                  ),
-                ),
+                textField(
+                    provider, provider.title, 29, AppStrings.defaultTitle, 32),
               if (provider.simple == true)
-                TextField(
-                  controller: provider.description,
-                  style: provider.textStyle.copyWith(
-                      color: provider.textColor,
-                      decorationColor: provider.textColor),
-                  cursorHeight: 24,
-                  cursorColor: AppColors.text,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: AppStrings.description,
-                    hintStyle: TextStyle(
-                      color: AppColors.divider,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 24,
-                    ),
-                  ),
-                ),
+                textField(provider, provider.description, 24,
+                    AppStrings.description, 24),
               if (provider.list == true)
                 ListView(
                   shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
                   children: [
-                    TextField(
-                      controller: provider.listTitle,
-                      style: provider.textStyle.copyWith(
-                          color: provider.textColor,
-                          decorationColor: provider.textColor),
-                      cursorHeight: 29,
-                      cursorColor: AppColors.text,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: AppStrings.defaultListTitle,
-                        hintStyle: TextStyle(
-                          color: AppColors.divider,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 32,
-                        ),
-                      ),
+                    listTextField(
+                      provider,
+                      listProvider,
+                      listProvider.listTitle,
+                      29,
+                      AppStrings.defaultListTitle,
+                      32,
                     ),
                     SizedBox(
                       height: 8,
                     ),
                     ...List.generate(
-                      provider.notes.length,
+                      listProvider.notesPointController.length,
                       (index) => NoteWidget(
                         index: index,
                         textColor: provider.textColor,

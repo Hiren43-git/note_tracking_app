@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:note_tracking_app/Core/Provider/note_provider.dart';
+import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:provider/provider.dart';
 
 class StyleColor extends StatefulWidget {

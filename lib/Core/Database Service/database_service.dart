@@ -27,7 +27,7 @@ class DbHelper {
         CREATE TABLE notes (id INTEGER PRIMARY KEY ,userId INTEGER,title TEXT,description TEXT)
       ''');
         await db.execute('''
-        CREATE TABLE listNotes (id INTEGER PRIMARY KEY ,title TEXT,points TEXT)
+        CREATE TABLE listNotes (id INTEGER PRIMARY KEY ,userId INTEGER,title TEXT,points TEXT)
       ''');
       },
       onOpen: (db) {

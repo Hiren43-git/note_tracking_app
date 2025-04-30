@@ -100,7 +100,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                'Login canceled !',
+                                'Something went wrong please check again !',
                               ),
                             ),
                           );

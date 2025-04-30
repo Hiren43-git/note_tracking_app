@@ -12,7 +12,7 @@ class ListNoteDatabaseService {
   Future<List<ListNoteModel>> readListNote(int userId) async {
     final dbClient = await dbHelper.database;
     final maps = await dbClient!.query(
-      'notes',
+      'listNotes',
       where: 'userId = ?',
       whereArgs: [userId],
     );

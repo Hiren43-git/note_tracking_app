@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Model/Auth%20Model/auth_model.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
-import 'package:note_tracking_app/Core/Provider/note_provider.dart';
+import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Screens/login_screen.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Widget/button_widget.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Widget/divider_widget.dart';

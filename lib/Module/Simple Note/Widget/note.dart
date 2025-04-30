@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:note_tracking_app/Core/Provider/note_provider.dart';
+import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
+import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,7 @@ class _NoteWidgetState extends State<NoteWidget> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<NoteProvider>(context);
+    final listProvider = Provider.of<ListNoteProvider>(context);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -26,9 +28,10 @@ class _NoteWidgetState extends State<NoteWidget> {
           width: 28,
           decoration: BoxDecoration(
             border: Border.all(
-              color: (provider.notesController[widget.index].text.isEmpty)
-                  ? AppColors.divider
-                  : provider.textColor,
+              color:
+                  (listProvider.notesPointController[widget.index].text.isEmpty)
+                      ? AppColors.divider
+                      : provider.textColor,
               width: 1,
             ),
             shape: BoxShape.circle,
@@ -39,14 +42,17 @@ class _NoteWidgetState extends State<NoteWidget> {
         ),
         Expanded(
           child: TextField(
-            controller: provider.notesController[widget.index],
-            style: (provider.notesController[widget.index].text.isNotEmpty)
+            controller: listProvider.notesPointController[widget.index],
+            style: (listProvider
+                    .notesPointController[widget.index].text.isNotEmpty)
                 ? provider.textStyle.copyWith(
                     color: provider.textColor,
                     decorationColor: provider.textColor)
                 : null,
             onSubmitted: (value) {
-              provider.addNote(widget.index);
+              if (value.isNotEmpty) {
+                listProvider.addNote(widget.index);
+              }
             },
             onChanged: (value) {
               setState(() {});
