@@ -22,12 +22,20 @@ class WelcomeScreen extends StatefulWidget {
 class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     AuthProvider().name.dispose();
     AuthProvider().email.dispose();
     AuthProvider().password.dispose();
     AuthProvider().confirmPassword.dispose();
+  }
+
+  @override
+  void initState() {
+    if (Provider.of<NoteProvider>(context, listen: false).edit == true) {
+      Provider.of<AuthProvider>(context, listen: false).name.text =
+          Provider.of<AuthProvider>(context, listen: false).name.text;
+    }
+    super.initState();
   }
 
   @override
@@ -39,15 +47,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final key = GlobalKey<FormState>();
     void register() async {
       if (key.currentState!.validate()) {
-        if (AuthProvider().image == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Please select image !',
-              ),
-            ),
-          );
-        }
         final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
         final user = AuthModel(
@@ -201,11 +200,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     onTap: () {
                       if (provider.edit == false) {
                         register();
-                        authProvider.password.clear();
-                        authProvider.name.clear();
-                        authProvider.confirmPassword.clear();
-                        authProvider.email.clear();
                       } else {
+                        final update = AuthModel(
+                          id: authProvider.currentUser!.id,
+                          name: authProvider.name.text,
+                          email: authProvider.email.text,
+                          password: authProvider.password.text,
+                          image: (authProvider.image != null)
+                              ? authProvider.image!.path
+                              : 'assets/Images/manager.png',
+                        );
+                        authProvider.updateUser(update);
+
                         Navigator.pop(context);
                       }
                     },

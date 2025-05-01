@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
 // import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Screens/note_screen.dart';
@@ -18,7 +19,7 @@ class _AddWidgetState extends State<AddWidget> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<NoteProvider>(context);
-    // final listProvider = Provider.of<ListNoteProvider>(context);
+    final listProvider = Provider.of<ListNoteProvider>(context);
 
     return Center(
       child: Padding(
@@ -75,6 +76,8 @@ class _AddWidgetState extends State<AddWidget> {
                     );
                     provider.list = true;
                     provider.simple = false;
+                    listProvider.listTitle.clear();
+                    listProvider.notesPointController.clear();
                   },
                   child: TextWidget(
                     color: AppColors.text,

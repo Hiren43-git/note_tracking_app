@@ -28,8 +28,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: Padding(
                   padding: const EdgeInsets.only(bottom: 29.0),
                   child: TextField(
+                    controller: provider.searchController,
                     cursorColor: AppColors.title,
                     style: TextStyle(color: AppColors.title),
+                    onChanged: (value) {
+                      if (value.trim().isNotEmpty) {
+                        provider.search(value.trim());
+                      } else {
+                        provider.searchNotes = [];
+                      }
+                    },
                     decoration: InputDecoration(
                       prefixIcon: Icon(
                         Icons.search,
@@ -92,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Icon(
                           Icons.edit,
                           color: AppColors.title,
-                          size: 26,
+                          size: 22,
                         ),
                       ),
                     ),

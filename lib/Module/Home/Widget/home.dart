@@ -109,6 +109,8 @@ class _HomeWidgetState extends State<HomeWidget> {
                                 );
                                 provider.list = false;
                                 provider.simple = true;
+                                provider.title.clear();
+                                provider.description.clear();
                               },
                               child: Container(
                                 decoration: BoxDecoration(
@@ -187,6 +189,8 @@ class _HomeWidgetState extends State<HomeWidget> {
                                 );
                                 provider.simple = false;
                                 provider.list = true;
+                                listProvider.listTitle.clear();
+                                listProvider.notesPointController.clear();
                               },
                               child: Container(
                                 height: width * 0.4,
@@ -253,23 +257,28 @@ class _HomeWidgetState extends State<HomeWidget> {
                                         line: 1,
                                       ),
                                       ...List.generate(
-                                        listProvider.listNotes[currentIndex]
-                                            .points.length,
-                                        (index) => TextWidget(
-                                          color: AppColors.text,
-                                          size: width * 0.038,
-                                          text: listProvider
-                                                  .listNotes[currentIndex]
-                                                  .points[index]
-                                                  .isNotEmpty
-                                              ? '○ ${listProvider.listNotes[currentIndex].points[index]}\n'
-                                              : '',
-                                          weight: FontWeight.w500,
-                                          overflow: TextOverflow.ellipsis,
-                                          height: 0.8,
-                                          line: 4,
-                                        ),
-                                      ),
+                                          listProvider.listNotes[currentIndex]
+                                              .points.length, (index) {
+                                        final text = listProvider
+                                            .listNotes[currentIndex]
+                                            .points[index];
+                                        return text.isNotEmpty
+                                            ? TextWidget(
+                                                color: AppColors.text,
+                                                size: width * 0.038,
+                                                text: listProvider
+                                                        .listNotes[currentIndex]
+                                                        .points[index]
+                                                        .isNotEmpty
+                                                    ? '○ ${listProvider.listNotes[currentIndex].points[index]}'
+                                                    : '',
+                                                weight: FontWeight.w500,
+                                                overflow: TextOverflow.ellipsis,
+                                                height: 1.4,
+                                                line: 4,
+                                              )
+                                            : SizedBox.shrink();
+                                      }),
                                     ],
                                   ),
                                 ),

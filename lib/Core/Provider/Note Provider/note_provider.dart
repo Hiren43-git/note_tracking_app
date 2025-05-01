@@ -9,6 +9,8 @@ import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 class NoteProvider extends ChangeNotifier {
   final NoteDatabaseService noteDatabaseService = NoteDatabaseService();
   List<NoteModel> notes = [];
+  List<NoteModel> searchNotes = [];
+  bool loading = false;
 
   Future<void> loadNote(int userId) async {
     notes = await noteDatabaseService.readNote(userId);
@@ -18,6 +20,12 @@ class NoteProvider extends ChangeNotifier {
   Future<void> addNotes(NoteModel note) async {
     await noteDatabaseService.addNote(note);
     loadNote(note.userId);
+    notifyListeners();
+  }
+
+//search 
+  Future<void> search(String search) async {
+    searchNotes = await noteDatabaseService.searchByTitle(search);
     notifyListeners();
   }
 
@@ -72,6 +80,7 @@ class NoteProvider extends ChangeNotifier {
 
   TextEditingController description = TextEditingController();
   TextEditingController title = TextEditingController();
+  TextEditingController searchController = TextEditingController();
 
   bool viewMore = false;
 

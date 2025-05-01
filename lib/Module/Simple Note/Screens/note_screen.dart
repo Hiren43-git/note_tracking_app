@@ -36,8 +36,39 @@ class _NoteScreenState extends State<NoteScreen> {
     if (widget.listNote != null) {
       Provider.of<ListNoteProvider>(context, listen: false).listTitle.text =
           widget.listNote!.title;
-      Provider.of<ListNoteProvider>(context, listen: false).listTitle.text =
-          widget.listNote!.title;
+
+      while (Provider.of<ListNoteProvider>(context, listen: false)
+              .notesPointController
+              .length <
+          widget.listNote!.points.length) {
+        if (widget.listNote!.points.isNotEmpty) {
+          Provider.of<ListNoteProvider>(context, listen: false)
+              .notesPointController
+              .add(TextEditingController());
+        } else {
+          widget.listNote!.points.length = widget.listNote!.points.length - 1;
+        }
+      }
+
+      for (int i = 0; i < widget.listNote!.points.length; i++) {
+        if (widget.listNote!.points[i].isEmpty) {
+          widget.listNote!.points.removeAt(i);
+          Provider.of<ListNoteProvider>(context, listen: false)
+              .notesPointController
+              .removeAt(i);
+        } else {
+          Provider.of<ListNoteProvider>(context, listen: false)
+              .notesPointController[i]
+              .text = widget.listNote!.points[i];
+        }
+      }
+    }
+    if (Provider.of<ListNoteProvider>(context, listen: false)
+        .notesPointController
+        .isEmpty) {
+      Provider.of<ListNoteProvider>(context, listen: false)
+          .notesPointController
+          .add(TextEditingController());
     }
   }
 
@@ -79,6 +110,8 @@ class _NoteScreenState extends State<NoteScreen> {
                       description: provider.description.text,
                     );
                     await provider.updateNote(update);
+                    provider.title.clear();
+                    provider.description.clear();
                   } else {
                     if (provider.title.text.isEmpty &&
                         provider.description.text.isEmpty) {
@@ -97,10 +130,10 @@ class _NoteScreenState extends State<NoteScreen> {
                           description: provider.description.text,
                         ),
                       );
+                      provider.title.clear();
+                      provider.description.clear();
                     }
                   }
-                  provider.title.clear();
-                  provider.description.clear();
                 }
                 if (provider.list == true) {
                   if (widget.listNote != null) {
@@ -114,7 +147,10 @@ class _NoteScreenState extends State<NoteScreen> {
                           )
                           .toList(),
                     );
+
                     await listProvider.updateNote(update);
+                    listProvider.listTitle.clear();
+                    listProvider.notesPointController.clear();
                   } else {
                     if (listProvider.listTitle.text.isEmpty &&
                         listProvider.notesPointController.isEmpty) {
@@ -137,10 +173,10 @@ class _NoteScreenState extends State<NoteScreen> {
                               .toList(),
                         ),
                       );
+                      listProvider.listTitle.clear();
+                      listProvider.notesPointController.clear();
                     }
                   }
-                  listProvider.listTitle.clear();
-                  listProvider.notesPointController.clear();
                 }
                 Navigator.of(context).pop();
               },
@@ -196,31 +232,31 @@ class _NoteScreenState extends State<NoteScreen> {
               if (provider.simple == true)
                 textField(provider, provider.description, 24,
                     AppStrings.description, 24),
-              if (provider.list == true)
-                ListView(
+              if (provider.list == true) ...[
+                listTextField(
+                  provider,
+                  listProvider,
+                  listProvider.listTitle,
+                  29,
+                  AppStrings.defaultListTitle,
+                  32,
+                ),
+                SizedBox(
+                  height: 8,
+                ),
+                ListView.builder(
+                  itemCount: listProvider.notesPointController.length,
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
-                  children: [
-                    listTextField(
-                      provider,
-                      listProvider,
-                      listProvider.listTitle,
-                      29,
-                      AppStrings.defaultListTitle,
-                      32,
-                    ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    ...List.generate(
-                      listProvider.notesPointController.length,
-                      (index) => NoteWidget(
-                        index: index,
-                        textColor: provider.textColor,
-                      ),
-                    ),
-                  ],
-                ),
+                  itemBuilder: (context, index) {
+                    print('list ${listProvider.notesPointController.length}');
+                    return NoteWidget(
+                      index: index,
+                      textColor: provider.textColor,
+                    );
+                  },
+                )
+              ],
             ],
           ),
         ),

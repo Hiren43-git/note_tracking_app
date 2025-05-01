@@ -29,6 +29,17 @@ class NoteDatabaseService {
     );
   }
 
+  Future<List<NoteModel>> searchByTitle(String search) async {
+    final dbClient = await dbHelper.database;
+    final result = await dbClient!
+        .query('notes', where: 'title LIKE ?', whereArgs: ['%$search%']);
+    return result
+        .map(
+          (e) => NoteModel.fromMap(e),
+        )
+        .toList();
+  }
+
   Future<void> deleteNote(int id) async {
     final dbClient = await dbHelper.database;
     await dbClient!.delete(

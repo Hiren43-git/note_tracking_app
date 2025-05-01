@@ -50,8 +50,12 @@ class _NoteWidgetState extends State<NoteWidget> {
                     decorationColor: provider.textColor)
                 : null,
             onSubmitted: (value) {
-              if (value.isNotEmpty) {
+              if (value.isNotEmpty &&
+                  widget.index ==
+                      listProvider.notesPointController.length - 1) {
                 listProvider.addNote(widget.index);
+              } else {
+                listProvider.notesPointController.removeAt(widget.index);
               }
             },
             onChanged: (value) {

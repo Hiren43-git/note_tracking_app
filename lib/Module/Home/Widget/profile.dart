@@ -16,6 +16,14 @@ class ProfileWidget extends StatefulWidget {
 
 class _ProfileWidgetState extends State<ProfileWidget> {
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Provider.of<AuthProvider>(context, listen: false).email;
+    Provider.of<AuthProvider>(context, listen: false).name;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AuthProvider>(context);
 
@@ -37,38 +45,64 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                 SizedBox(
                   width: 16,
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextWidget(
-                      color: AppColors.title,
-                      size: 18,
-                      text: provider.currentUser!.name,
-                      weight: FontWeight.bold,
-                    ),
-                    TextWidget(
-                      color: AppColors.title,
-                      size: 18,
-                      text: provider.currentUser!.email,
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextWidget(
+                        color: AppColors.title,
+                        size: 18,
+                        text: provider.name.text,
+                        weight: FontWeight.bold,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      TextWidget(
+                        color: AppColors.title,
+                        size: 18,
+                        text: provider.email.text,
+                        overflow: TextOverflow.ellipsis,
+                        line: 2,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
+          SizedBox(
+            height: 12,
+          ),
           GestureDetector(
             onTap: () {
-              Provider.of<AuthProvider>(context, listen: false).logout();
+              Provider.of<AuthProvider>(context, listen: false).logout(
+                  Provider.of<AuthProvider>(context, listen: false)
+                      .currentUser!
+                      .id!);
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => LoginScreen(),
                 ),
               );
+              AuthProvider().name.clear();
+              AuthProvider().password.clear();
+              AuthProvider().email.clear();
+              AuthProvider().confirmPassword.clear();
             },
-            child: TextWidget(
-              color: AppColors.red,
-              size: 18,
-              text: AppStrings.logout,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.logout,
+                  color: AppColors.red,
+                ),
+                SizedBox(
+                  width: 12,
+                ),
+                TextWidget(
+                  color: AppColors.red,
+                  size: 18,
+                  text: AppStrings.logout,
+                ),
+              ],
             ),
           ),
         ],

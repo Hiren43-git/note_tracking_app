@@ -13,7 +13,7 @@ class AuthModel {
     required this.image,
   });
 
-  Map<String,dynamic> toMap() {
+  Map<String, dynamic> toMap() {
     return {
       'id': id,
       'name': name,

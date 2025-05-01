@@ -235,6 +235,9 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
                                           );
                                           provider.simple = false;
                                           provider.list = true;
+                                          listProvider.listTitle.clear();
+                                          listProvider.notesPointController
+                                              .clear();
                                         },
                                         child: Icon(
                                           Icons.edit,
@@ -262,15 +265,20 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
                                               .asMap()
                                               .entries
                                               .where(
-                                                (element) => !(element.key ==
-                                                        listProvider
-                                                                .listNotes[
-                                                                    widget
-                                                                        .index]
-                                                                .points
-                                                                .length -
-                                                            1 &&
-                                                    element.value.isEmpty),
+                                                (element) =>
+                                                    !(element.key ==
+                                                            listProvider
+                                                                    .listNotes[
+                                                                        widget
+                                                                            .index]
+                                                                    .points
+                                                                    .length -
+                                                                1 &&
+                                                        element
+                                                            .value.isEmpty) &&
+                                                    element.value
+                                                        .trim()
+                                                        .isNotEmpty,
                                               )
                                               .map(
                                                 (e) => '○ ${e.value}',
@@ -283,16 +291,19 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
                                                   .asMap()
                                                   .entries
                                                   .where(
-                                                    (element) => !(element
-                                                                .key ==
-                                                            listProvider
-                                                                    .listNotes[
-                                                                        widget
+                                                    (element) =>
+                                                        !(element.key ==
+                                                                listProvider
+                                                                        .listNotes[widget
                                                                             .index]
-                                                                    .points
-                                                                    .length -
-                                                                1 &&
-                                                        element.value.isEmpty),
+                                                                        .points
+                                                                        .length -
+                                                                    1 &&
+                                                            element.value
+                                                                .isEmpty) &&
+                                                        element.value
+                                                            .trim()
+                                                            .isNotEmpty,
                                                   )
                                                   .map(
                                                     (e) => '○ ${e.value}',

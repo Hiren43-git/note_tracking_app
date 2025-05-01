@@ -31,9 +31,13 @@ class AuthProvider extends ChangeNotifier {
     return false;
   }
 
-  Future<void> logout() async {
-    print(currentUser!.email);
-    currentUser = null;
+  Future<void> logout(int id) async {
+    await authDatabaseService.deleteUser(id);
+    notifyListeners();
+  }
+
+  Future<void> updateUser(AuthModel user) async {
+    await authDatabaseService.updateUser(user);
     notifyListeners();
   }
 

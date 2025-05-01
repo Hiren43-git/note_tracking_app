@@ -19,6 +19,17 @@ class ListNoteDatabaseService {
     return maps.map((e) => ListNoteModel.fromMap(e)).toList();
   }
 
+  Future<List<ListNoteModel>> searchByTitle(String search) async {
+    final dbClient = await dbHelper.database;
+    final result = await dbClient!
+        .query('listNotes', where: 'title LIKE ?', whereArgs: ['%$search%']);
+    return result
+        .map(
+          (e) => ListNoteModel.fromMap(e),
+        )
+        .toList();
+  }
+
   Future<void> updateListNote(ListNoteModel listNote) async {
     final dbClient = await dbHelper.database;
     await dbClient!.update(

@@ -6,8 +6,15 @@ class ListNoteProvider extends ChangeNotifier {
   final ListNoteDatabaseService listNoteDatabaseService =
       ListNoteDatabaseService();
   List<ListNoteModel> listNotes = [];
+  List<ListNoteModel> searchListNotes = [];
 
   TextEditingController listTitle = TextEditingController();
+  bool loading = false;
+// search
+  Future<void> search(String search) async {
+    searchListNotes = await listNoteDatabaseService.searchByTitle(search);
+    notifyListeners();
+  }
 
   Future<void> loadNote(int userId) async {
     listNotes = await listNoteDatabaseService.readListNote(userId);
@@ -39,5 +46,14 @@ class ListNoteProvider extends ChangeNotifier {
   void addNote(int index) {
     notesPointController.insert(index + 1, TextEditingController());
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    listTitle.dispose();
+    for (var controller in notesPointController) {
+      controller.dispose();
+    }
   }
 }
