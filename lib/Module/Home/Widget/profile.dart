@@ -16,14 +16,6 @@ class ProfileWidget extends StatefulWidget {
 
 class _ProfileWidgetState extends State<ProfileWidget> {
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    Provider.of<AuthProvider>(context, listen: false).email;
-    Provider.of<AuthProvider>(context, listen: false).name;
-  }
-
-  @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AuthProvider>(context);
 
@@ -76,8 +68,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
             onTap: () {
               Provider.of<AuthProvider>(context, listen: false).logout(
                   Provider.of<AuthProvider>(context, listen: false)
-                      .currentUser!
-                      .id!);
+                      .currentUserId);
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => LoginScreen(),

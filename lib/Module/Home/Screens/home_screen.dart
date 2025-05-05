@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
+import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
+import 'package:note_tracking_app/Module/Home/Widget/add_widget.dart';
+import 'package:note_tracking_app/Module/Home/Widget/list_widget.dart';
+import 'package:note_tracking_app/Module/Home/Widget/note_widget.dart';
+import 'package:note_tracking_app/Module/Home/Widget/profile.dart';
 import 'package:note_tracking_app/Module/Welcome/Screens/welcome_screen.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
@@ -12,11 +18,33 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController tabController;
+  final TextEditingController searchController = TextEditingController();
+
   @override
+  void initState() {
+    super.initState();
+    tabController = TabController(length: 2, vsync: this);
+    if (Provider.of<AuthProvider>(context, listen: false).currentUserId != 0) {
+      Provider.of<NoteProvider>(context, listen: false).loadNote(
+          Provider.of<AuthProvider>(context, listen: false).currentUserId);
+      Provider.of<ListNoteProvider>(context, listen: false).loadNote(
+          Provider.of<AuthProvider>(context, listen: false).currentUserId);
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    tabController.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<NoteProvider>(context);
+    final listProvider = Provider.of<ListNoteProvider>(context);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -28,14 +56,36 @@ class _HomeScreenState extends State<HomeScreen> {
                 title: Padding(
                   padding: const EdgeInsets.only(bottom: 29.0),
                   child: TextField(
-                    controller: provider.searchController,
+                    controller: searchController,
                     cursorColor: AppColors.title,
                     style: TextStyle(color: AppColors.title),
                     onChanged: (value) {
                       if (value.trim().isNotEmpty) {
-                        provider.search(value.trim());
+                        if (tabController.index == 0) {
+                          provider.search(value.trim());
+                        }
+                        if (tabController.index == 1) {
+                          listProvider.search(value.trim());
+                        }
                       } else {
-                        provider.searchNotes = [];
+                        if (tabController.index == 0) {
+                          int? id =
+                              Provider.of<AuthProvider>(context, listen: false)
+                                  .currentUserId;
+                          if (id != 0) {
+                            provider.clearSearch(id);
+                            searchController.clear();
+                          }
+                        }
+                        if (tabController.index == 1) {
+                          int? id =
+                              Provider.of<AuthProvider>(context, listen: false)
+                                  .currentUserId;
+                          if (id != 0) {
+                            listProvider.clearSearch(id);
+                            searchController.clear();
+                          }
+                        }
                       }
                     },
                     decoration: InputDecoration(
@@ -61,6 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 bottom: TabBar(
+                  controller: tabController,
                   splashFactory: NoSplash.splashFactory,
                   overlayColor: MaterialStateProperty.all(
                     AppColors.transparent,
@@ -107,8 +158,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
         body: Consumer<NoteProvider>(
-          builder: (context, value, child) =>
-              provider.screen[provider.selectedIndexOfBottom],
+          builder: (context, value, child) {
+            if (provider.selectedIndexOfBottom == 0) {
+              return TabBarView(
+                controller: tabController,
+                children: [
+                  NoteWidget(),
+                  ListWidget(),
+                ],
+              );
+            } else if (provider.selectedIndexOfBottom == 1) {
+              return AddWidget();
+            } else {
+              return ProfileWidget();
+            }
+          },
         ),
         bottomNavigationBar: Column(
           mainAxisSize: MainAxisSize.min,

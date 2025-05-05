@@ -53,7 +53,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           name: authProvider.name.text,
           email: authProvider.email.text,
           password: authProvider.password.text,
-          image: (authProvider.image != null) ? authProvider.image!.path : '',
+          image: (authProvider.image != null)
+              ? authProvider.image!.path
+              : 'assets/Images/manager.png',
         );
         final result = await authProvider.signUp(user);
 

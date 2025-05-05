@@ -16,7 +16,11 @@ class NoteDatabaseService {
       where: 'userId = ?',
       whereArgs: [userId],
     );
-    return maps.map((e) => NoteModel.fromMap(e)).toList();
+    return maps
+        .map(
+          (e) => NoteModel.fromMap(e),
+        )
+        .toList();
   }
 
   Future<void> updateNote(NoteModel note) async {
@@ -31,8 +35,11 @@ class NoteDatabaseService {
 
   Future<List<NoteModel>> searchByTitle(String search) async {
     final dbClient = await dbHelper.database;
-    final result = await dbClient!
-        .query('notes', where: 'title LIKE ?', whereArgs: ['%$search%']);
+    final result = await dbClient!.query(
+      'notes',
+      where: 'title LIKE ?',
+      whereArgs: ['%$search%'],
+    );
     return result
         .map(
           (e) => NoteModel.fromMap(e),

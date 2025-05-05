@@ -21,11 +21,11 @@ class HomeWidget extends StatefulWidget {
 class _HomeWidgetState extends State<HomeWidget> {
   @override
   void initState() {
-    if (Provider.of<AuthProvider>(context, listen: false).currentUser != null) {
+    if (Provider.of<AuthProvider>(context, listen: false).currentUserId != 0) {
       Provider.of<NoteProvider>(context, listen: false).loadNote(
-          Provider.of<AuthProvider>(context, listen: false).currentUser!.id!);
+          Provider.of<AuthProvider>(context, listen: false).currentUserId);
       Provider.of<ListNoteProvider>(context, listen: false).loadNote(
-          Provider.of<AuthProvider>(context, listen: false).currentUser!.id!);
+          Provider.of<AuthProvider>(context, listen: false).currentUserId);
     }
     super.initState();
   }

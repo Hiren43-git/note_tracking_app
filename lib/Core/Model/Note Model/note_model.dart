@@ -3,15 +3,17 @@ class NoteModel {
   final int userId;
   final String title;
   final String description;
+  bool view;
 
   NoteModel({
     this.id,
     required this.userId,
     required this.title,
     required this.description,
+    this.view = false,
   });
 
-  Map<String,dynamic> toMap() {
+  Map<String, dynamic> toMap() {
     return {
       'id': id,
       'userId': userId,

@@ -16,7 +16,10 @@ class AuthDatabaseService {
     List<Map<String, dynamic>> result = await dbClient!.query(
       'users',
       where: 'email = ? AND password = ?',
-      whereArgs: [email, password],
+      whereArgs: [
+        email,
+        password,
+      ],
     );
     if (result.isNotEmpty) {
       return AuthModel.fromMap(result.first);

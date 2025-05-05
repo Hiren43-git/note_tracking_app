@@ -31,6 +31,12 @@ class AuthProvider extends ChangeNotifier {
     return false;
   }
 
+  int currentUserId = 1;
+  void getCurrentUserId(int id) {
+    currentUserId = id;
+    notifyListeners();
+  }
+
   Future<void> logout(int id) async {
     await authDatabaseService.deleteUser(id);
     notifyListeners();

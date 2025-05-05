@@ -80,9 +80,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     onTap: () async {
                       if (authProvider.key.currentState!.validate()) {
                         final result = await authProvider.login(
-                            authProvider.email.text,
-                            authProvider.password.text);
-
+                          authProvider.email.text,
+                          authProvider.password.text,
+                        );
                         if (result == true) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

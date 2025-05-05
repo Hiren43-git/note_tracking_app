@@ -55,6 +55,8 @@ class _AddWidgetState extends State<AddWidget> {
                       ),
                     );
                     provider.list = false;
+                    provider.subList = false;
+                    provider.subSimple = false;
                     provider.simple = true;
                   },
                   child: TextWidget(
@@ -76,6 +78,8 @@ class _AddWidgetState extends State<AddWidget> {
                     );
                     provider.list = true;
                     provider.simple = false;
+                    provider.subList = false;
+                    provider.subSimple = false;
                     listProvider.listTitle.clear();
                     listProvider.notesPointController.clear();
                   },

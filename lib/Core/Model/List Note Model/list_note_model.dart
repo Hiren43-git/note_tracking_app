@@ -3,12 +3,14 @@ class ListNoteModel {
   final int userId;
   final String title;
   final List points;
+  bool view;
 
   ListNoteModel({
     this.id,
     required this.userId,
     required this.title,
     required this.points,
+    this.view = false,
   });
 
   Map<String, dynamic> toMap() {

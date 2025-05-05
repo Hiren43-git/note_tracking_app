@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Model/List%20Note%20Model/list_note_model.dart';
+import 'package:note_tracking_app/Core/Model/List%20Note%20Model/sub_list_model.dart';
 import 'package:note_tracking_app/Core/Model/Note%20Model/note_model.dart';
+import 'package:note_tracking_app/Core/Model/Note%20Model/sub_note_model.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
@@ -17,7 +19,10 @@ import 'package:provider/provider.dart';
 class NoteScreen extends StatefulWidget {
   final NoteModel? note;
   final ListNoteModel? listNote;
-  const NoteScreen({super.key, this.note, this.listNote});
+  final SubNoteModel? subNote;
+  final SubListNoteModel? subListNote;
+  const NoteScreen(
+      {super.key, this.note, this.listNote, this.subNote, this.subListNote});
 
   @override
   State<NoteScreen> createState() => _NoteScreenState();
@@ -27,6 +32,12 @@ class _NoteScreenState extends State<NoteScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.subNote != null) {
+      Provider.of<NoteProvider>(context, listen: false).title.text =
+          widget.subNote!.title;
+      Provider.of<NoteProvider>(context, listen: false).description.text =
+          widget.subNote!.description;
+    }
     if (widget.note != null) {
       Provider.of<NoteProvider>(context, listen: false).title.text =
           widget.note!.title;
@@ -60,6 +71,37 @@ class _NoteScreenState extends State<NoteScreen> {
           Provider.of<ListNoteProvider>(context, listen: false)
               .notesPointController[i]
               .text = widget.listNote!.points[i];
+        }
+      }
+    }
+    if (widget.subListNote != null) {
+      Provider.of<ListNoteProvider>(context, listen: false).listTitle.text =
+          widget.subListNote!.title;
+
+      while (Provider.of<ListNoteProvider>(context, listen: false)
+              .notesPointController
+              .length <
+          widget.subListNote!.points.length) {
+        if (widget.subListNote!.points.isNotEmpty) {
+          Provider.of<ListNoteProvider>(context, listen: false)
+              .notesPointController
+              .add(TextEditingController());
+        } else {
+          widget.subListNote!.points.length =
+              widget.subListNote!.points.length - 1;
+        }
+      }
+
+      for (int i = 0; i < widget.subListNote!.points.length; i++) {
+        if (widget.subListNote!.points[i].isEmpty) {
+          widget.subListNote!.points.removeAt(i);
+          Provider.of<ListNoteProvider>(context, listen: false)
+              .notesPointController
+              .removeAt(i);
+        } else {
+          Provider.of<ListNoteProvider>(context, listen: false)
+              .notesPointController[i]
+              .text = widget.subListNote!.points[i];
         }
       }
     }
@@ -101,6 +143,38 @@ class _NoteScreenState extends State<NoteScreen> {
             padding: const EdgeInsets.only(right: 20.0),
             child: GestureDetector(
               onTap: () async {
+                if (provider.subSimple == true) {
+                  if (widget.subNote != null) {
+                    final update = SubNoteModel(
+                      id: widget.subNote!.id,
+                      noteId: provider.currentNoteId,
+                      title: provider.title.text,
+                      description: provider.description.text,
+                    );
+                    await provider.updateSubNote(update);
+                    provider.title.clear();
+                    provider.description.clear();
+                  } else {
+                    if (provider.title.text.isEmpty &&
+                        provider.description.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Add note data !',
+                          ),
+                        ),
+                      );
+                    } else {
+                      provider.addSubNotes(SubNoteModel(
+                        noteId: provider.currentNoteId,
+                        title: provider.title.text,
+                        description: provider.description.text,
+                      ));
+                      provider.title.clear();
+                      provider.description.clear();
+                    }
+                  }
+                }
                 if (provider.simple == true) {
                   if (widget.note != null) {
                     final update = NoteModel(
@@ -135,6 +209,48 @@ class _NoteScreenState extends State<NoteScreen> {
                     }
                   }
                 }
+                if (provider.subList == true) {
+                  if (widget.subListNote != null) {
+                    final update = SubListNoteModel(
+                      id: widget.subListNote!.id,
+                      listNoteId: listProvider.currentNoteId,
+                      title: listProvider.listTitle.text,
+                      points: listProvider.notesPointController
+                          .map(
+                            (e) => e.text,
+                          )
+                          .toList(),
+                    );
+                    provider.list = true;
+                    await listProvider.updateSubNote(update);
+                  } else {
+                    if (listProvider.listTitle.text.isEmpty &&
+                        listProvider.notesPointController.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Add note data !',
+                          ),
+                        ),
+                      );
+                    } else {
+                      listProvider.addSubNotes(
+                        SubListNoteModel(
+                          listNoteId: listProvider.currentNoteId,
+                          title: listProvider.listTitle.text,
+                          points: listProvider.notesPointController
+                              .map(
+                                (e) => e.text,
+                              )
+                              .toList(),
+                        ),
+                      );
+                      provider.list = true;
+                    }
+                  }
+                  listProvider.listTitle.clear();
+                  listProvider.notesPointController.clear();
+                }
                 if (provider.list == true) {
                   if (widget.listNote != null) {
                     final update = ListNoteModel(
@@ -164,7 +280,7 @@ class _NoteScreenState extends State<NoteScreen> {
                     } else {
                       listProvider.addNotes(
                         ListNoteModel(
-                          userId: authProvider.currentUser!.id!,
+                          userId: authProvider.currentUserId,
                           title: listProvider.listTitle.text,
                           points: listProvider.notesPointController
                               .map(
@@ -178,6 +294,8 @@ class _NoteScreenState extends State<NoteScreen> {
                     }
                   }
                 }
+                await provider.loadNote(authProvider.currentUserId);
+                await listProvider.loadNote(authProvider.currentUserId);
                 Navigator.of(context).pop();
               },
               child: Container(
@@ -226,13 +344,13 @@ class _NoteScreenState extends State<NoteScreen> {
               SizedBox(
                 height: 34,
               ),
-              if (provider.simple == true)
+              if (provider.simple == true || provider.subSimple == true)
                 textField(
                     provider, provider.title, 29, AppStrings.defaultTitle, 32),
-              if (provider.simple == true)
+              if (provider.simple == true || provider.subSimple == true)
                 textField(provider, provider.description, 24,
                     AppStrings.description, 24),
-              if (provider.list == true) ...[
+              if (provider.list == true || provider.subList == true) ...[
                 listTextField(
                   provider,
                   listProvider,

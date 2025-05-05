@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 String trimText(String text, TextStyle style, BuildContext context) {
-  final viewMore = '';
+  final viewMore = 'View More';
   final width = MediaQuery.of(context).size.width - 76;
   int index = text.length;
   while (index > 0) {

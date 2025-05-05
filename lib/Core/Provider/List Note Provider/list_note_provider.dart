@@ -1,18 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Database%20Service/List%20Note%20Database%20Service/list_note_database_service.dart';
+import 'package:note_tracking_app/Core/Database%20Service/List%20Note%20Database%20Service/sub_list_note_database_service.dart';
 import 'package:note_tracking_app/Core/Model/List%20Note%20Model/list_note_model.dart';
+import 'package:note_tracking_app/Core/Model/List%20Note%20Model/sub_list_model.dart';
+import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 
 class ListNoteProvider extends ChangeNotifier {
   final ListNoteDatabaseService listNoteDatabaseService =
       ListNoteDatabaseService();
+  final SubListNoteDatabaseService subListNoteDatabaseService =
+      SubListNoteDatabaseService();
   List<ListNoteModel> listNotes = [];
+  List<SubListNoteModel> subListNotes = [];
   List<ListNoteModel> searchListNotes = [];
 
   TextEditingController listTitle = TextEditingController();
   bool loading = false;
 // search
+  void setNotes(List<ListNoteModel> list) {
+    listNotes = list;
+    notifyListeners();
+  }
+
   Future<void> search(String search) async {
-    searchListNotes = await listNoteDatabaseService.searchByTitle(search);
+    listNotes = await listNoteDatabaseService.searchByTitle(search);
+    notifyListeners();
+  }
+
+  void clearSearch(int id) {
+    loadNote(id);
     notifyListeners();
   }
 
@@ -34,11 +50,48 @@ class ListNoteProvider extends ChangeNotifier {
   }
 
   Future<void> deleteNote(int id) async {
+    listNotes.removeWhere((element) => element.id == id);
     await listNoteDatabaseService.deleteListNote(id);
-    listNotes.removeWhere(
+    final mainSubListNotes = subListNotes
+        .where(
+          (element) => element.listNoteId == id,
+        )
+        .toList();
+
+    if (mainSubListNotes.isNotEmpty) {
+      final newNote = mainSubListNotes.first;
+
+      final note1 = ListNoteModel(
+          userId: AuthProvider().currentUserId,
+          title: newNote.title,
+          id: id,
+          points: newNote.points);
+      listNotes.insert(0, note1);
+      subListNotes.removeWhere(
+        (element) => element.id == newNote.id,
+      );
+      await subListNoteDatabaseService.deleteSubListNote(newNote.id!);
+      await listNoteDatabaseService.addListNote(note1);
+      loadNote(AuthProvider().currentUserId);
+      loadSubNote(AuthProvider().currentUserId);
+      notifyListeners();
+    }
+    notifyListeners();
+  }
+
+  void descriptionShow(int id) {
+    listNotes[id].view = !listNotes[id].view;
+    notifyListeners();
+  }
+
+  void subDescriptionShow(int id) {
+    int ids = subListNotes.indexWhere(
       (element) => element.id == id,
     );
-    notifyListeners();
+    if (ids != -1) {
+      subListNotes[ids].view = !subListNotes[ids].view;
+      notifyListeners();
+    }
   }
 
   List notesPointController = [TextEditingController()];
@@ -46,6 +99,45 @@ class ListNoteProvider extends ChangeNotifier {
   void addNote(int index) {
     notesPointController.insert(index + 1, TextEditingController());
     notifyListeners();
+  }
+
+  Future<void> loadSubNote(int listNoteId) async {
+    subListNotes = await subListNoteDatabaseService.readSubListNote(listNoteId);
+    notifyListeners();
+  }
+
+  Future<void> addSubNotes(SubListNoteModel subListNote) async {
+    await subListNoteDatabaseService.addSubListNote(subListNote);
+    loadSubNote(subListNote.listNoteId);
+    notifyListeners();
+  }
+
+  Future<void> updateSubNote(SubListNoteModel subNote) async {
+    await subListNoteDatabaseService.updateSubListNote(subNote);
+    loadNote(subNote.listNoteId);
+    notifyListeners();
+  }
+
+  Future<void> deleteSubNote(int id) async {
+    await subListNoteDatabaseService.deleteSubListNote(id);
+    subListNotes.removeWhere(
+      (element) => element.id == id,
+    );
+    notifyListeners();
+  }
+
+  int currentNoteId = 1;
+  void getCurrentNoteId(int noteId) {
+    currentNoteId = noteId;
+    notifyListeners();
+  }
+
+  List<SubListNoteModel> getSubNotes(int listNoteId) {
+    return subListNotes
+        .where(
+          (element) => element.listNoteId == listNoteId,
+        )
+        .toList();
   }
 
   @override
