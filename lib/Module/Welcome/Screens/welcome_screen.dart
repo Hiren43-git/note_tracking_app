@@ -45,44 +45,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final provider = Provider.of<NoteProvider>(context);
 
     final key = GlobalKey<FormState>();
-    void register() async {
-      if (key.currentState!.validate()) {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
-
-        final user = AuthModel(
-          name: authProvider.name.text,
-          email: authProvider.email.text,
-          password: authProvider.password.text,
-          image: (authProvider.image != null)
-              ? authProvider.image!.path
-              : 'assets/Images/manager.png',
-        );
-        final result = await authProvider.signUp(user);
-
-        if (result == 'success') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Signup Successfully !',
-              ),
-            ),
-          );
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => LoginScreen(),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                result,
-              ),
-            ),
-          );
-        }
-      }
-    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -163,10 +125,19 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     height: 16,
                   ),
                   TextFieldWidget(
-                    validator: (value) =>
-                        value == null || !value.contains('@gmail.com')
-                            ? 'Enter valid email'
-                            : null,
+                    validator: (value) {
+                      if (value!.isNotEmpty) {
+                        if (authProvider.validEmail(value)) {
+                          authProvider.validEmail(value);
+                        } else {
+                          authProvider.errorMessage(
+                              context, 'Invalid Email Address');
+                        }
+                      } else {
+                        return 'Enter email';
+                      }
+                      return null;
+                    },
                     controller: authProvider.email,
                     text: AppStrings.email,
                     hint: AppStrings.emailText,
@@ -176,32 +147,96 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       height: 16,
                     ),
                     TextFieldWidget(
-                      validator: (value) => value == null || value.length < 6
-                          ? 'Password too short'
-                          : null,
+                      validator: (value) {
+                        if (value!.isNotEmpty) {
+                          if (authProvider.validPassword(value)) {
+                            authProvider.validPassword(value);
+                          } else {
+                            authProvider.errorMessage(
+                                context, 'Invalid password');
+                          }
+                        } else {
+                          return 'Enter password';
+                        }
+                        return null;
+                      },
                       controller: authProvider.password,
                       text: AppStrings.password,
                       hint: AppStrings.passwordText,
+                      hide: true,
                     ),
                     SizedBox(
                       height: 16,
                     ),
                     TextFieldWidget(
-                      validator: (value) => value != authProvider.password.text
-                          ? 'Password do not match'
-                          : null,
+                      validator: (value) {
+                        if (value!.isNotEmpty) {
+                          value != authProvider.password.text
+                              ? authProvider.errorMessage(
+                                  context, 'Password does not matched')
+                              : null;
+                        } else {
+                          return 'Enter repeat password';
+                        }
+                        return null;
+                      },
                       controller: authProvider.confirmPassword,
                       text: AppStrings.repeatPassword,
                       hint: AppStrings.passwordText,
+                      conHide: true,
                     ),
                   ],
                   SizedBox(
                     height: 38,
                   ),
                   GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       if (provider.edit == false) {
-                        register();
+                        if (key.currentState!.validate()) {
+                          if (authProvider
+                                  .validEmail(authProvider.email.text) &&
+                              authProvider
+                                  .validPassword(authProvider.password.text) &&
+                              authProvider.password.text ==
+                                  authProvider.confirmPassword.text) {
+                            final user = AuthModel(
+                              name: authProvider.name.text,
+                              email: authProvider.email.text,
+                              password: authProvider.password.text,
+                              image: (authProvider.image != null)
+                                  ? authProvider.image!.path
+                                  : 'assets/Images/manager.png',
+                            );
+                            final result = await authProvider.signUp(user);
+
+                            if (result == 'success') {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Signup Successfully !',
+                                  ),
+                                ),
+                              );
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) => LoginScreen(),
+                                ),
+                              );
+                              authProvider.email.clear();
+                              authProvider.password.clear();
+                              authProvider.confirmPassword.clear();
+                              authProvider.name.clear();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    result,
+                                  ),
+                                ),
+                              );
+                            }
+                          }
+                        }
                       } else {
                         final update = AuthModel(
                           id: authProvider.currentUser!.id,
@@ -238,6 +273,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             builder: (context) => LoginScreen(),
                           ),
                         );
+                        authProvider.email.clear();
+                        authProvider.password.clear();
+                        authProvider.confirmPassword.clear();
+                        authProvider.name.clear();
                       },
                       child: Builder(
                         builder: (context) {

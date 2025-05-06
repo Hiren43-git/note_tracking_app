@@ -12,7 +12,6 @@ class NoteProvider extends ChangeNotifier {
       SubNoteDatabaseService();
   List<NoteModel> notes = [];
   List<SubNoteModel> subNotes = [];
-  List searchNotes = [];
   bool loading = false;
 
   Future<void> loadNote(int userId) async {
@@ -63,28 +62,21 @@ class NoteProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-//search
-  void setNotes(List<NoteModel> list, List<SubNoteModel> subList) {
-    notes = list;
-    subNotes = subList;
-    notifyListeners();
-  }
-
   Future<void> search(String search) async {
     if (search.isNotEmpty) {
-      notes = await noteDatabaseService.searchByTitle(search);
-      subNotes = await subNoteDatabaseService.searchByTitle(search);
-      searchNotes.addAll(notes);
-      searchNotes.addAll(subNotes);
-    } else {
-      searchNotes = notes;
+      final result = await noteDatabaseService.searchResult(search);
+      notes = result
+          .map(
+            (e) => NoteModel.fromMap(e),
+          )
+          .toList();
+      notifyListeners();
     }
     notifyListeners();
   }
 
   void clearSearch(int id) {
     loadNote(id);
-    searchNotes = [];
     notifyListeners();
   }
 
@@ -124,7 +116,12 @@ class NoteProvider extends ChangeNotifier {
   TextEditingController title = TextEditingController();
 
   void descriptionShow(int id) {
-    notes[id].view = !notes[id].view;
+    int ids = notes.indexWhere(
+      (element) => element.id == id,
+    );
+    if (ids != -1) {
+      notes[ids].view = !notes[ids].view;
+    }
     notifyListeners();
   }
 

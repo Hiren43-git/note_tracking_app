@@ -98,6 +98,8 @@ class _NoteWidgetState extends State<NoteWidget> {
                                 .getCurrentNoteId(provider.notes[index].id!);
                             provider.list = false;
                             provider.simple = true;
+                            provider.subSimple = false;
+                            provider.subList = false;
                             provider.title.clear();
                             provider.description.clear();
                           },

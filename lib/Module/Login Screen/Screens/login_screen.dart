@@ -54,10 +54,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 16,
                   ),
                   TextFieldWidget(
-                    validator: (value) =>
-                        value == null || !value.contains('@gmail.com')
-                            ? 'Enter valid email'
-                            : null,
+                    validator: (value) {
+                      if (value!.isNotEmpty) {
+                        if (authProvider.validEmail(value)) {
+                          authProvider.validEmail(value);
+                        } else {
+                          authProvider.errorMessage(
+                              context, 'Invalid Email Address');
+                        }
+                      } else {
+                        return 'Enter email';
+                      }
+                      return null;
+                    },
                     controller: authProvider.email,
                     text: AppStrings.email,
                     hint: AppStrings.emailText,
@@ -66,12 +75,23 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 16,
                   ),
                   TextFieldWidget(
-                    validator: (value) => value == null || value.length < 6
-                        ? 'Password too short'
-                        : null,
+                    validator: (value) {
+                      if (value!.isNotEmpty) {
+                        if (authProvider.validPassword(value)) {
+                          authProvider.validPassword(value);
+                        } else {
+                          authProvider.errorMessage(
+                              context, 'Invalid password');
+                        }
+                      } else {
+                        return 'Enter password';
+                      }
+                      return null;
+                    },
                     controller: authProvider.password,
                     text: AppStrings.password,
                     hint: AppStrings.passwordText,
+                    hide: true,
                   ),
                   SizedBox(
                     height: 38,
@@ -79,31 +99,35 @@ class _LoginScreenState extends State<LoginScreen> {
                   GestureDetector(
                     onTap: () async {
                       if (authProvider.key.currentState!.validate()) {
-                        final result = await authProvider.login(
-                          authProvider.email.text,
-                          authProvider.password.text,
-                        );
-                        if (result == true) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Login Successfully !',
+                        if (authProvider.validEmail(authProvider.email.text) &&
+                            authProvider
+                                .validPassword(authProvider.password.text)) {
+                          final result = await authProvider.login(
+                            authProvider.email.text,
+                            authProvider.password.text,
+                          );
+                          if (result == true) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Login Successfully !',
+                                ),
                               ),
-                            ),
-                          );
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (context) => HomeScreen(),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Something went wrong please check again !',
+                            );
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => HomeScreen(),
                               ),
-                            ),
-                          );
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Email address does not exist',
+                                ),
+                              ),
+                            );
+                          }
                         }
                       }
                     },
@@ -125,6 +149,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           builder: (context) => WelcomeScreen(),
                         ),
                       );
+                      authProvider.email.clear();
+                      authProvider.password.clear();
+                      authProvider.confirmPassword.clear();
+                      authProvider.name.clear();
                     },
                     child: Builder(
                       builder: (context) {

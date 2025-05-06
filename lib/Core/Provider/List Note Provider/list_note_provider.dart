@@ -12,18 +12,20 @@ class ListNoteProvider extends ChangeNotifier {
       SubListNoteDatabaseService();
   List<ListNoteModel> listNotes = [];
   List<SubListNoteModel> subListNotes = [];
-  List<ListNoteModel> searchListNotes = [];
 
   TextEditingController listTitle = TextEditingController();
   bool loading = false;
-// search
-  void setNotes(List<ListNoteModel> list) {
-    listNotes = list;
-    notifyListeners();
-  }
 
   Future<void> search(String search) async {
-    listNotes = await listNoteDatabaseService.searchByTitle(search);
+    if (search.isNotEmpty) {
+      final result = await listNoteDatabaseService.searchResult(search);
+      listNotes = result
+          .map(
+            (e) => ListNoteModel.fromMap(e),
+          )
+          .toList();
+      notifyListeners();
+    }
     notifyListeners();
   }
 
@@ -79,12 +81,17 @@ class ListNoteProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void descriptionShow(int id) {
-    listNotes[id].view = !listNotes[id].view;
-    notifyListeners();
+  void listDescriptionShow(int id) {
+    int ids = listNotes.indexWhere(
+      (element) => element.id == id,
+    );
+    if (ids != -1) {
+      listNotes[ids].view = !listNotes[ids].view;
+      notifyListeners();
+    }
   }
 
-  void subDescriptionShow(int id) {
+  void subListDescriptionShow(int id) {
     int ids = subListNotes.indexWhere(
       (element) => element.id == id,
     );

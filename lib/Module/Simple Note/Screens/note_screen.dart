@@ -144,6 +144,7 @@ class _NoteScreenState extends State<NoteScreen> {
             child: GestureDetector(
               onTap: () async {
                 if (provider.subSimple == true) {
+                  provider.simple = false;
                   if (widget.subNote != null) {
                     final update = SubNoteModel(
                       id: widget.subNote!.id,
@@ -152,8 +153,7 @@ class _NoteScreenState extends State<NoteScreen> {
                       description: provider.description.text,
                     );
                     await provider.updateSubNote(update);
-                    provider.title.clear();
-                    provider.description.clear();
+                    await provider.loadSubNote(provider.currentNoteId);
                   } else {
                     if (provider.title.text.isEmpty &&
                         provider.description.text.isEmpty) {
@@ -165,15 +165,17 @@ class _NoteScreenState extends State<NoteScreen> {
                         ),
                       );
                     } else {
-                      provider.addSubNotes(SubNoteModel(
-                        noteId: provider.currentNoteId,
-                        title: provider.title.text,
-                        description: provider.description.text,
-                      ));
-                      provider.title.clear();
-                      provider.description.clear();
+                      provider.addSubNotes(
+                        SubNoteModel(
+                          noteId: provider.currentNoteId,
+                          title: provider.title.text,
+                          description: provider.description.text,
+                        ),
+                      );
                     }
                   }
+                  provider.title.clear();
+                  provider.description.clear();
                 }
                 if (provider.simple == true) {
                   if (widget.note != null) {
@@ -221,8 +223,8 @@ class _NoteScreenState extends State<NoteScreen> {
                           )
                           .toList(),
                     );
-                    provider.list = true;
                     await listProvider.updateSubNote(update);
+                    await listProvider.loadSubNote(listProvider.currentNoteId);
                   } else {
                     if (listProvider.listTitle.text.isEmpty &&
                         listProvider.notesPointController.isEmpty) {
@@ -245,7 +247,6 @@ class _NoteScreenState extends State<NoteScreen> {
                               .toList(),
                         ),
                       );
-                      provider.list = true;
                     }
                   }
                   listProvider.listTitle.clear();
@@ -346,10 +347,10 @@ class _NoteScreenState extends State<NoteScreen> {
               ),
               if (provider.simple == true || provider.subSimple == true)
                 textField(
-                    provider, provider.title, 29, AppStrings.defaultTitle, 32),
+                    provider, provider.title, 29, AppStrings.defaultTitle, 32,2),
               if (provider.simple == true || provider.subSimple == true)
                 textField(provider, provider.description, 24,
-                    AppStrings.description, 24),
+                    AppStrings.description, 24,6),
               if (provider.list == true || provider.subList == true) ...[
                 listTextField(
                   provider,

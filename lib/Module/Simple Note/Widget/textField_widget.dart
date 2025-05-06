@@ -4,8 +4,9 @@ import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.da
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 
 TextField textField(NoteProvider provider, TextEditingController controller,
-    double height, String hintText, double size) {
+    double height, String hintText, double size, int? line) {
   return TextField(
+    maxLines: line,
     controller: controller,
     style: provider.textStyle.copyWith(
         color: provider.textColor, decorationColor: provider.textColor),

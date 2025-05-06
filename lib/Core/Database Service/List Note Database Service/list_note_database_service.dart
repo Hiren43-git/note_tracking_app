@@ -19,15 +19,38 @@ class ListNoteDatabaseService {
     return maps.map((e) => ListNoteModel.fromMap(e)).toList();
   }
 
-  Future<List<ListNoteModel>> searchByTitle(String search) async {
+  Future<List<Map<String, dynamic>>> searchResult(String search) async {
     final dbClient = await dbHelper.database;
-    final result = await dbClient!
-        .query('listNotes', where: 'title LIKE ?', whereArgs: ['%$search%']);
-    return result
+
+    final matchSubNote = await dbClient!.query(
+      'subListNotes',
+      where: 'title LIKE ?',
+      whereArgs: ['%$search%'],
+    );
+    final subNotesId = matchSubNote
         .map(
-          (e) => ListNoteModel.fromMap(e),
+          (e) => e['listNoteId'],
         )
-        .toList();
+        .toSet();
+
+    final matchNote = await dbClient.query(
+      'listNotes',
+      where: 'title LIKE ?',
+      whereArgs: ['%$search%'],
+    );
+
+    final noteId = matchNote
+        .map(
+          (e) => e['id'],
+        )
+        .toSet();
+    final allNotes = {...subNotesId, ...noteId}.toList();
+    if (allNotes.isEmpty) return [];
+    final result = await dbClient.query(
+      'listNotes',
+      where: 'id IN (${allNotes.join(',')})',
+    );
+    return result;
   }
 
   Future<void> updateListNote(ListNoteModel listNote) async {

@@ -104,6 +104,8 @@ class _ListWidgetState extends State<ListWidget> {
                                 listProvider.listNotes[index].id!);
                             provider.list = true;
                             provider.simple = false;
+                            provider.subList = false;
+                            provider.subSimple = false;
                             provider.title.clear();
                             provider.description.clear();
                           },

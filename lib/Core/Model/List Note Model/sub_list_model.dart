@@ -4,6 +4,7 @@ class SubListNoteModel {
   final String title;
   final List points;
   bool view;
+  
   SubListNoteModel({
     this.id,
     required this.listNoteId,

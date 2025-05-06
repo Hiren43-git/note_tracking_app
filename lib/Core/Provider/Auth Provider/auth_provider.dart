@@ -31,6 +31,47 @@ class AuthProvider extends ChangeNotifier {
     return false;
   }
 
+  bool passwordShow = false;
+  bool conPasswordShow = false;
+
+  void showPassword() {
+    if (passwordShow == true) {
+      passwordShow = false;
+      notifyListeners();
+    } else {
+      passwordShow = true;
+      notifyListeners();
+    }
+  }
+
+  void showConfirmPassword() {
+    if (conPasswordShow == true) {
+      conPasswordShow = false;
+      notifyListeners();
+    } else {
+      conPasswordShow = true;
+      notifyListeners();
+    }
+  }
+
+  bool validEmail(String value) {
+    final email = RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
+    return email.hasMatch(value);
+  }
+
+  bool validPassword(String value) {
+    final password = RegExp(r"[a-z][0-9]");
+    return password.hasMatch(value);
+  }
+
+  void errorMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+      ),
+    );
+  }
+
   int currentUserId = 1;
   void getCurrentUserId(int id) {
     currentUserId = id;

@@ -32,21 +32,7 @@ class NoteDatabaseService {
       whereArgs: [note.id],
     );
   }
-
-  Future<List<NoteModel>> searchByTitle(String search) async {
-    final dbClient = await dbHelper.database;
-    final result = await dbClient!.query(
-      'notes',
-      where: 'title LIKE ?',
-      whereArgs: ['%$search%'],
-    );
-    return result
-        .map(
-          (e) => NoteModel.fromMap(e),
-        )
-        .toList();
-  }
-
+  
   Future<void> deleteNote(int id) async {
     final dbClient = await dbHelper.database;
     await dbClient!.delete(
@@ -54,5 +40,48 @@ class NoteDatabaseService {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<void> getNoteById(int id) async {
+    final dbClient = await dbHelper.database;
+    await dbClient!.query(
+      'notes',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> searchResult(String search) async {
+    final dbClient = await dbHelper.database;
+
+    final matchSubNote = await dbClient!.query(
+      'subNotes',
+      where: 'title LIKE ?',
+      whereArgs: ['%$search%'],
+    );
+    final subNotesId = matchSubNote
+        .map(
+          (e) => e['noteId'],
+        )
+        .toSet();
+
+    final matchNote = await dbClient.query(
+      'notes',
+      where: 'title LIKE ?',
+      whereArgs: ['%$search%'],
+    );
+
+    final noteId = matchNote
+        .map(
+          (e) => e['id'],
+        )
+        .toSet();
+    final allNotes = {...subNotesId, ...noteId}.toList();
+    if (allNotes.isEmpty) return [];
+    final result = await dbClient.query(
+      'notes',
+      where: 'id IN (${allNotes.join(',')})',
+    );
+    return result;
   }
 }
