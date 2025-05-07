@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Note%20Detail/Screens/note_detail_screen.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Screens/note_screen.dart';
@@ -92,8 +91,6 @@ class _NoteWidgetState extends State<NoteWidget> {
                                 ),
                               ),
                             );
-                            AuthProvider()
-                                .getCurrentUserId(provider.notes[index].id!);
                             provider
                                 .getCurrentNoteId(provider.notes[index].id!);
                             provider.list = false;

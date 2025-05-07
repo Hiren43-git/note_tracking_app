@@ -6,11 +6,11 @@ import 'package:note_tracking_app/Core/Database%20Service/Auth%20Database%20Serv
 import 'package:note_tracking_app/Core/Model/Auth%20Model/auth_model.dart';
 
 class AuthProvider extends ChangeNotifier {
-  AuthModel? currentUser;
+  // AuthModel? currentUser;
 
   final AuthDatabaseService authDatabaseService = AuthDatabaseService();
 
-  AuthModel? get getCurrentUser => currentUser;
+  // AuthModel? get getCurrentUser => currentUser;
 
   Future<String> signUp(AuthModel user) async {
     if (user.email.isNotEmpty && user.password.isNotEmpty) {
@@ -21,10 +21,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> login(String email, String password) async {
-    final user = await authDatabaseService.loginUser(email, password);
+  Future<bool> login(
+      String email, String password, BuildContext context) async {
+    final user = await authDatabaseService.loginUser(email, password, context);
     if (user != null) {
-      currentUser = user;
+      // currentUser = user;
       notifyListeners();
       return true;
     }
@@ -60,7 +61,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   bool validPassword(String value) {
-    final password = RegExp(r"[a-z][0-9]");
+    final password = RegExp(r"(?=.*[a-z])(?=.*[0-9]).{6,}$");
     return password.hasMatch(value);
   }
 
@@ -72,14 +73,20 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
-  int currentUserId = 1;
+  int? currentUserId = 1;
   void getCurrentUserId(int id) {
     currentUserId = id;
     notifyListeners();
   }
 
-  Future<void> logout(int id) async {
-    await authDatabaseService.deleteUser(id);
+  String currentUserName = '';
+  void getCurrentUserName(String name) {
+    currentUserName = name;
+    notifyListeners();
+  }
+
+  Future<void> logout() async {
+    currentUserId = null;
     notifyListeners();
   }
 

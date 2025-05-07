@@ -11,6 +11,7 @@ class ListNoteProvider extends ChangeNotifier {
   final SubListNoteDatabaseService subListNoteDatabaseService =
       SubListNoteDatabaseService();
   List<ListNoteModel> listNotes = [];
+  List<ListNoteModel> searchNotes = [];
   List<SubListNoteModel> subListNotes = [];
 
   TextEditingController listTitle = TextEditingController();
@@ -19,7 +20,7 @@ class ListNoteProvider extends ChangeNotifier {
   Future<void> search(String search) async {
     if (search.isNotEmpty) {
       final result = await listNoteDatabaseService.searchResult(search);
-      listNotes = result
+      searchNotes = result
           .map(
             (e) => ListNoteModel.fromMap(e),
           )
@@ -31,6 +32,7 @@ class ListNoteProvider extends ChangeNotifier {
 
   void clearSearch(int id) {
     loadNote(id);
+    searchNotes = [];
     notifyListeners();
   }
 
@@ -64,7 +66,7 @@ class ListNoteProvider extends ChangeNotifier {
       final newNote = mainSubListNotes.first;
 
       final note1 = ListNoteModel(
-          userId: AuthProvider().currentUserId,
+          userId: AuthProvider().currentUserId!,
           title: newNote.title,
           id: id,
           points: newNote.points);
@@ -74,8 +76,8 @@ class ListNoteProvider extends ChangeNotifier {
       );
       await subListNoteDatabaseService.deleteSubListNote(newNote.id!);
       await listNoteDatabaseService.addListNote(note1);
-      loadNote(AuthProvider().currentUserId);
-      loadSubNote(AuthProvider().currentUserId);
+      loadNote(AuthProvider().currentUserId!);
+      loadSubNote(AuthProvider().currentUserId!);
       notifyListeners();
     }
     notifyListeners();

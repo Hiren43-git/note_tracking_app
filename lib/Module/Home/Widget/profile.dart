@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Screens/login_screen.dart';
-import 'package:note_tracking_app/Module/Welcome/Widget/image_widget.dart';
 import 'package:note_tracking_app/Module/Welcome/Widget/text_widget.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
@@ -18,7 +17,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AuthProvider>(context);
-
+    double width = MediaQuery.of(context).size.width;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 26.0),
       child: Column(
@@ -33,7 +32,22 @@ class _ProfileWidgetState extends State<ProfileWidget> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ImageWidget(),
+                Container(
+                  height: width * 0.266,
+                  width: width * 0.266,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.textFieldBackground,
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: (provider.image != null)
+                          ? FileImage(provider.image!)
+                          : AssetImage(
+                              'assets/Images/manager.png',
+                            ),
+                    ),
+                  ),
+                ),
                 SizedBox(
                   width: 16,
                 ),
@@ -44,13 +58,13 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                       TextWidget(
                         color: AppColors.title,
                         size: 18,
-                        text: provider.name.text,
+                        text: provider.currentUserName,
                         weight: FontWeight.bold,
                         overflow: TextOverflow.ellipsis,
                       ),
                       TextWidget(
                         color: AppColors.title,
-                        size: 18,
+                        size: 15,
                         text: provider.email.text,
                         overflow: TextOverflow.ellipsis,
                         line: 2,
@@ -66,18 +80,16 @@ class _ProfileWidgetState extends State<ProfileWidget> {
           ),
           GestureDetector(
             onTap: () {
-              Provider.of<AuthProvider>(context, listen: false).logout(
-                  Provider.of<AuthProvider>(context, listen: false)
-                      .currentUserId);
+              provider.logout();
+              provider.name.clear();
+              provider.password.clear();
+              provider.email.clear();
+              provider.confirmPassword.clear();
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => LoginScreen(),
                 ),
               );
-              AuthProvider().name.clear();
-              AuthProvider().password.clear();
-              AuthProvider().email.clear();
-              AuthProvider().confirmPassword.clear();
             },
             child: Row(
               children: [

@@ -11,6 +11,7 @@ class NoteProvider extends ChangeNotifier {
   final SubNoteDatabaseService subNoteDatabaseService =
       SubNoteDatabaseService();
   List<NoteModel> notes = [];
+  List<NoteModel> searchNotes = [];
   List<SubNoteModel> subNotes = [];
   bool loading = false;
 
@@ -44,7 +45,7 @@ class NoteProvider extends ChangeNotifier {
       final newNote = mainSubNotes.first;
 
       final note1 = NoteModel(
-        userId: AuthProvider().currentUserId,
+        userId: AuthProvider().currentUserId!,
         title: newNote.title,
         id: id,
         description: newNote.description,
@@ -55,8 +56,8 @@ class NoteProvider extends ChangeNotifier {
       );
       await subNoteDatabaseService.deleteSubNote(newNote.id!);
       await noteDatabaseService.addNote(note1);
-      loadNote(AuthProvider().currentUserId);
-      loadSubNote(AuthProvider().currentUserId);
+      loadNote(AuthProvider().currentUserId!);
+      loadSubNote(AuthProvider().currentUserId!);
       notifyListeners();
     }
     notifyListeners();
@@ -65,7 +66,7 @@ class NoteProvider extends ChangeNotifier {
   Future<void> search(String search) async {
     if (search.isNotEmpty) {
       final result = await noteDatabaseService.searchResult(search);
-      notes = result
+      searchNotes = result
           .map(
             (e) => NoteModel.fromMap(e),
           )
@@ -77,6 +78,7 @@ class NoteProvider extends ChangeNotifier {
 
   void clearSearch(int id) {
     loadNote(id);
+    searchNotes = [];
     notifyListeners();
   }
 
@@ -165,6 +167,8 @@ class NoteProvider extends ChangeNotifier {
     currentNoteId = noteId;
     notifyListeners();
   }
+
+  List currentIndex = [[]];
 
   List<SubNoteModel> getSubNotes(int noteId) {
     return subNotes

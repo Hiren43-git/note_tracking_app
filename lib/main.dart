@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
-import 'package:note_tracking_app/Module/Home/Screens/home_screen.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Screens/login_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -31,12 +30,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         home: Consumer<AuthProvider>(
           builder: (context, provider, child) {
-            print(provider.currentUser);
-            if (provider.currentUser == null) {
-              return LoginScreen();
-            } else {
-              return HomeScreen();
-            }
+            return LoginScreen();
           },
         ),
       ),

@@ -60,10 +60,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           authProvider.validEmail(value);
                         } else {
                           authProvider.errorMessage(
-                              context, 'Invalid Email Address');
+                              context, AppStrings.invalidEmail);
                         }
                       } else {
-                        return 'Enter email';
+                        return AppStrings.enterEmail;
                       }
                       return null;
                     },
@@ -81,10 +81,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           authProvider.validPassword(value);
                         } else {
                           authProvider.errorMessage(
-                              context, 'Invalid password');
+                              context, AppStrings.invalidPassword);
+                          return AppStrings.passwordRequire;
                         }
                       } else {
-                        return 'Enter password';
+                        return AppStrings.enterPassword;
                       }
                       return null;
                     },
@@ -105,12 +106,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           final result = await authProvider.login(
                             authProvider.email.text,
                             authProvider.password.text,
+                            context,
                           );
                           if (result == true) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  'Login Successfully !',
+                                  AppStrings.loginSuccess,
                                 ),
                               ),
                             );
@@ -123,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  'Email address does not exist',
+                                  AppStrings.emailNotExist,
                                 ),
                               ),
                             );

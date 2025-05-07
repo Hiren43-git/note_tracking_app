@@ -33,7 +33,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   void initState() {
     if (Provider.of<NoteProvider>(context, listen: false).edit == true) {
       Provider.of<AuthProvider>(context, listen: false).name.text =
-          Provider.of<AuthProvider>(context, listen: false).name.text;
+          Provider.of<AuthProvider>(context, listen: false).currentUserName;
     }
     super.initState();
   }
@@ -116,7 +116,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   TextFieldWidget(
                     controller: authProvider.name,
                     validator: (value) => value == null || value.isEmpty
-                        ? 'Enter your name'
+                        ? AppStrings.enterName
                         : null,
                     text: AppStrings.name,
                     hint: AppStrings.name,
@@ -131,10 +131,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           authProvider.validEmail(value);
                         } else {
                           authProvider.errorMessage(
-                              context, 'Invalid Email Address');
+                            context,
+                            AppStrings.invalidEmail,
+                          );
                         }
                       } else {
-                        return 'Enter email';
+                        return AppStrings.enterEmail;
                       }
                       return null;
                     },
@@ -153,10 +155,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             authProvider.validPassword(value);
                           } else {
                             authProvider.errorMessage(
-                                context, 'Invalid password');
+                              context,
+                              AppStrings.invalidPassword,
+                            );
+                            return AppStrings.passwordRequire;
                           }
                         } else {
-                          return 'Enter password';
+                          return AppStrings.enterPassword;
                         }
                         return null;
                       },
@@ -173,10 +178,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         if (value!.isNotEmpty) {
                           value != authProvider.password.text
                               ? authProvider.errorMessage(
-                                  context, 'Password does not matched')
+                                  context,
+                                  AppStrings.passwordNotMatch,
+                                )
                               : null;
                         } else {
-                          return 'Enter repeat password';
+                          return AppStrings.enterRepeatPassword;
                         }
                         return null;
                       },
@@ -205,15 +212,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               password: authProvider.password.text,
                               image: (authProvider.image != null)
                                   ? authProvider.image!.path
-                                  : 'assets/Images/manager.png',
+                                  : AppStrings.image,
                             );
                             final result = await authProvider.signUp(user);
 
-                            if (result == 'success') {
+                            if (result == AppStrings.success) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    'Signup Successfully !',
+                                    AppStrings.signUpSuccess,
                                   ),
                                 ),
                               );
@@ -238,14 +245,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           }
                         }
                       } else {
+                        authProvider.currentUserName = authProvider.name.text;
                         final update = AuthModel(
-                          id: authProvider.currentUser!.id,
-                          name: authProvider.name.text,
+                          id: authProvider.currentUserId,
+                          name: authProvider.currentUserName,
                           email: authProvider.email.text,
                           password: authProvider.password.text,
                           image: (authProvider.image != null)
                               ? authProvider.image!.path
-                              : 'assets/Images/manager.png',
+                              : AppStrings.image,
                         );
                         authProvider.updateUser(update);
 

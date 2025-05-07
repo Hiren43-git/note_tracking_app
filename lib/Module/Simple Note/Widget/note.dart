@@ -24,8 +24,8 @@ class _NoteWidgetState extends State<NoteWidget> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          height: 28,
-          width: 28,
+          height: 18,
+          width: 18,
           decoration: BoxDecoration(
             border: Border.all(
               color:
@@ -61,14 +61,13 @@ class _NoteWidgetState extends State<NoteWidget> {
             onChanged: (value) {
               setState(() {});
             },
-            cursorHeight: 24,
             cursorColor: AppColors.text,
             decoration: InputDecoration(
               border: InputBorder.none,
               hintText: AppStrings.defaultList,
               hintStyle: TextStyle(
                 color: AppColors.divider,
-                fontSize: 24,
+                fontSize: 18,
               ),
             ),
           ),

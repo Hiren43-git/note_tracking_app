@@ -6,6 +6,7 @@ import 'package:note_tracking_app/Module/Home/Widget/add_widget.dart';
 import 'package:note_tracking_app/Module/Home/Widget/list_widget.dart';
 import 'package:note_tracking_app/Module/Home/Widget/note_widget.dart';
 import 'package:note_tracking_app/Module/Home/Widget/profile.dart';
+import 'package:note_tracking_app/Module/Search/Screens/search_screen.dart';
 import 'package:note_tracking_app/Module/Welcome/Screens/welcome_screen.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
@@ -21,7 +22,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController tabController;
-  final TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -29,9 +29,9 @@ class _HomeScreenState extends State<HomeScreen>
     tabController = TabController(length: 2, vsync: this);
     if (Provider.of<AuthProvider>(context, listen: false).currentUserId != 0) {
       Provider.of<NoteProvider>(context, listen: false).loadNote(
-          Provider.of<AuthProvider>(context, listen: false).currentUserId);
+          Provider.of<AuthProvider>(context, listen: false).currentUserId!);
       Provider.of<ListNoteProvider>(context, listen: false).loadNote(
-          Provider.of<AuthProvider>(context, listen: false).currentUserId);
+          Provider.of<AuthProvider>(context, listen: false).currentUserId!);
     }
   }
 
@@ -44,7 +44,6 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<NoteProvider>(context);
-    final listProvider = Provider.of<ListNoteProvider>(context);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -56,38 +55,45 @@ class _HomeScreenState extends State<HomeScreen>
                 title: Padding(
                   padding: const EdgeInsets.only(bottom: 29.0),
                   child: TextField(
-                    controller: searchController,
+                    // controller: searchController,
                     cursorColor: AppColors.title,
                     style: TextStyle(color: AppColors.title),
-                    onChanged: (value) {
-                      if (value.trim().isNotEmpty) {
-                        if (tabController.index == 0) {
-                          provider.search(value.trim());
-                        }
-                        if (tabController.index == 1) {
-                          listProvider.search(value.trim());
-                        }
-                      } else {
-                        if (tabController.index == 0) {
-                          int? id =
-                              Provider.of<AuthProvider>(context, listen: false)
-                                  .currentUserId;
-                          if (id != 0) {
-                            provider.clearSearch(id);
-                            searchController.clear();
-                          }
-                        }
-                        if (tabController.index == 1) {
-                          int? id =
-                              Provider.of<AuthProvider>(context, listen: false)
-                                  .currentUserId;
-                          if (id != 0) {
-                            listProvider.clearSearch(id);
-                            searchController.clear();
-                          }
-                        }
-                      }
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => SearchScreen(),
+                        ),
+                      );
                     },
+                    // onChanged: (value) {
+                    //   if (value.trim().isNotEmpty) {
+                    //     if (tabController.index == 0) {
+                    //       provider.search(value.trim());
+                    //     }
+                    //     if (tabController.index == 1) {
+                    //       listProvider.search(value.trim());
+                    //     }
+                    //   } else {
+                    //     if (tabController.index == 0) {
+                    //       int? id =
+                    //           Provider.of<AuthProvider>(context, listen: false)
+                    //               .currentUserId;
+                    //       if (id != 0) {
+                    //         provider.clearSearch(id!);
+                    //         searchController.clear();
+                    //       }
+                    //     }
+                    //     if (tabController.index == 1) {
+                    //       int? id =
+                    //           Provider.of<AuthProvider>(context, listen: false)
+                    //               .currentUserId;
+                    //       if (id != 0) {
+                    //         listProvider.clearSearch(id!);
+                    //         searchController.clear();
+                    //       }
+                    //     }
+                    //   }
+                    // },
                     decoration: InputDecoration(
                       prefixIcon: Icon(
                         Icons.search,

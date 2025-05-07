@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Note%20Detail/Screens/note_detail_screen.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Screens/note_screen.dart';
@@ -98,8 +97,6 @@ class _ListWidgetState extends State<ListWidget> {
                                 ),
                               ),
                             );
-                            AuthProvider().getCurrentUserId(
-                                listProvider.listNotes[index].id!);
                             listProvider.getCurrentNoteId(
                                 listProvider.listNotes[index].id!);
                             provider.list = true;
@@ -133,28 +130,39 @@ class _ListWidgetState extends State<ListWidget> {
                                     overflow: TextOverflow.ellipsis,
                                     line: 1,
                                   ),
-                                  ...List.generate(
-                                      listProvider.listNotes[currentIndex]
-                                          .points.length, (index) {
-                                    final text = listProvider
-                                        .listNotes[currentIndex].points[index];
-                                    return text.isNotEmpty
-                                        ? TextWidget(
-                                            color: AppColors.text,
-                                            size: width * 0.038,
-                                            text: listProvider
-                                                    .listNotes[currentIndex]
-                                                    .points[index]
-                                                    .isNotEmpty
-                                                ? '○ ${listProvider.listNotes[currentIndex].points[index]}'
-                                                : '',
-                                            weight: FontWeight.w500,
-                                            overflow: TextOverflow.ellipsis,
-                                            height: 1.4,
-                                            line: 4,
-                                          )
-                                        : SizedBox.shrink();
-                                  }),
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemCount: (listProvider
+                                                .listNotes[currentIndex]
+                                                .points
+                                                .length >
+                                            4)
+                                        ? 4
+                                        : listProvider.listNotes[currentIndex]
+                                            .points.length,
+                                    itemBuilder: (context, index) {
+                                      final text = listProvider
+                                          .listNotes[currentIndex]
+                                          .points[index];
+                                      return text.isNotEmpty
+                                          ? TextWidget(
+                                              color: AppColors.text,
+                                              size: width * 0.038,
+                                              text: listProvider
+                                                      .listNotes[currentIndex]
+                                                      .points[index]
+                                                      .isNotEmpty
+                                                  ? '○ ${listProvider.listNotes[currentIndex].points[index]}'
+                                                  : '',
+                                              weight: FontWeight.w500,
+                                              overflow: TextOverflow.ellipsis,
+                                              height: 1.4,
+                                              line: 1,
+                                            )
+                                          : SizedBox.shrink();
+                                    },
+                                  ),
                                 ],
                               ),
                             ),

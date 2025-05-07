@@ -1,5 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Database%20Service/database_service.dart';
 import 'package:note_tracking_app/Core/Model/Auth%20Model/auth_model.dart';
+import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class AuthDatabaseService {
   final dbHelper = DbHelper.helper;
@@ -11,7 +14,8 @@ class AuthDatabaseService {
     }
   }
 
-  Future<AuthModel?> loginUser(String email, String password) async {
+  Future<AuthModel?> loginUser(
+      String email, String password, BuildContext context) async {
     final dbClient = await dbHelper.database;
     List<Map<String, dynamic>> result = await dbClient!.query(
       'users',
@@ -22,6 +26,12 @@ class AuthDatabaseService {
       ],
     );
     if (result.isNotEmpty) {
+      final userId = result.first['id'] as int;
+      final name = result.first['name'] as String;
+      Provider.of<AuthProvider>(context, listen: false)
+          .getCurrentUserId(userId);
+      Provider.of<AuthProvider>(context, listen: false)
+          .getCurrentUserName(name);
       return AuthModel.fromMap(result.first);
     }
     return null;

@@ -1,20 +1,32 @@
 class AppStrings {
   static String remind = 'Remind me';
   static String notetaking = 'Note taking made easier';
+  static String image = 'assets/Images/manager.png';
   static String editProfile = 'Edit profile';
   static String email = 'Email address';
+  static String emailNotExist = 'Email address does not exist';
+  static String enterEmail = 'Enter email';
+  static String invalidEmail = 'Invalid Email address';
   static String name = 'Name';
+  static String enterName = 'Enter your name';
   static String description = 'Description';
   static String emptyNote = 'Simple note not available';
   static String emptyListNote = 'List note not available';
   static String emailText = 'email@email.com';
-  static String passwordText = '********';
+  static String passwordText = 'Enter Password';
   static String password = 'Password';
+  static String passwordRequire =
+      '1 digit, 1 letter and password length 6 required';
+  static String passwordNotMatch = 'Password does not matched';
+  static String invalidPassword = 'Invalid Password';
+  static String enterPassword = 'Enter password';
   static String repeatPassword = 'Repeat password';
+  static String enterRepeatPassword = 'Enter Repeat password';
   static String start = 'Get Started!';
   static String search = 'Search note';
   static String note = 'Notes';
   static String list = 'Lists';
+  static String listNote = 'List Notes';
   static String home = 'Home';
   static String add = 'Add';
   static String profile = 'Profile';
@@ -32,9 +44,12 @@ class AppStrings {
   static String h2 = 'H2';
   static String h3 = 'H3';
   static String a = 'A';
+  static String success = 'success';
   static String viewMore = ' View more';
   static String viewLess = ' View less';
   static String login = 'Login';
   static String signUp = 'Sign up';
+  static String signUpSuccess = 'Signup Successfully !';
+  static String loginSuccess = 'Login Successfully !';
   static String logout = 'Logout';
 }

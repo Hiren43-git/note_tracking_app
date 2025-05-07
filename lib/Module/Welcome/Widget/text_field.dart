@@ -60,6 +60,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
                           authProvider.conPasswordShow
                               ? Icons.visibility
                               : Icons.visibility_off,
+                          size: 22,
                         ),
                         color: AppColors.title,
                         onPressed: () {
@@ -73,6 +74,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
                           authProvider.passwordShow
                               ? Icons.visibility
                               : Icons.visibility_off,
+                          size: 22,
                         ),
                         color: AppColors.title,
                         onPressed: () {
