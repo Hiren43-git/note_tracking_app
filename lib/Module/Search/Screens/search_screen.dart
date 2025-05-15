@@ -118,7 +118,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               child: TextWidget(
                                 color: AppColors.title,
                                 size: 16,
-                                text: AppStrings.emptyNote,
+                                text: AppStrings.noteNotFound,
                               ),
                             ),
                             SizedBox(height: height * 0.36),

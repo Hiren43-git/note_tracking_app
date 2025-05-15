@@ -4,6 +4,7 @@ import 'package:note_tracking_app/Core/Database%20Service/List%20Note%20Database
 import 'package:note_tracking_app/Core/Model/List%20Note%20Model/list_note_model.dart';
 import 'package:note_tracking_app/Core/Model/List%20Note%20Model/sub_list_model.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
+import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 
 class ListNoteProvider extends ChangeNotifier {
   final ListNoteDatabaseService listNoteDatabaseService =
@@ -66,10 +67,13 @@ class ListNoteProvider extends ChangeNotifier {
       final newNote = mainSubListNotes.first;
 
       final note1 = ListNoteModel(
-          userId: AuthProvider().currentUserId!,
-          title: newNote.title,
-          id: id,
-          points: newNote.points);
+        userId: AuthProvider().currentUserId!,
+        title: newNote.title,
+        id: id,
+        points: newNote.points,
+        titleStyle: newNote.titleStyle,
+        pointsStyle: newNote.pointsStyle,
+      );
       listNotes.insert(0, note1);
       subListNotes.removeWhere(
         (element) => element.id == newNote.id,
@@ -77,9 +81,160 @@ class ListNoteProvider extends ChangeNotifier {
       await subListNoteDatabaseService.deleteSubListNote(newNote.id!);
       await listNoteDatabaseService.addListNote(note1);
       loadNote(AuthProvider().currentUserId!);
-      loadSubNote(AuthProvider().currentUserId!);
+      loadSubNote(currentNoteId);
       notifyListeners();
     }
+    notifyListeners();
+  }
+
+  TextStyle titleStyles = TextStyle(
+    fontSize: 26,
+  );
+  TextStyle pointStyle = TextStyle(
+    fontSize: 26,
+  );
+
+  final FocusNode titleFocus = FocusNode();
+  List pointFocus = [FocusNode()];
+  List notesPointController = [TextEditingController()];
+
+  void addPoint(int index) {
+    pointFocus.insert(index + 1, FocusNode());
+    notesPointController.insert(index + 1, TextEditingController());
+    notifyListeners();
+  }
+
+  void removePoint(int index) {
+    if (index >= 0 && index < pointFocus.length) {
+      pointFocus[index].dispose();
+      notesPointController[index].dispose();
+      pointFocus.removeAt(index);
+      notesPointController.removeAt(index);
+      notifyListeners();
+    }
+  }
+
+  void disposePoint() {
+    for (var node in pointFocus) {
+      node.dispose();
+    }
+    for (var controller in notesPointController) {
+      controller.dispose();
+    }
+    pointFocus.clear();
+    notesPointController.clear();
+  }
+
+  String field = 'title';
+  Color textColor = AppColors.text;
+  Color pointColor = AppColors.text;
+  Color underlineColor = AppColors.text;
+
+  void bold() {
+    if (field == 'title') {
+      titleStyles = titleStyles.copyWith(
+        fontWeight: titleStyles.fontWeight == FontWeight.bold
+            ? FontWeight.normal
+            : FontWeight.bold,
+      );
+    } else {
+      pointStyle = pointStyle.copyWith(
+        fontWeight: pointStyle.fontWeight == FontWeight.bold
+            ? FontWeight.normal
+            : FontWeight.bold,
+      );
+    }
+    notifyListeners();
+  }
+
+  void italic() {
+    if (field == 'title') {
+      titleStyles = titleStyles.copyWith(
+        fontStyle: titleStyles.fontStyle == FontStyle.italic
+            ? FontStyle.normal
+            : FontStyle.italic,
+      );
+    } else {
+      pointStyle = pointStyle.copyWith(
+        fontStyle: pointStyle.fontStyle == FontStyle.italic
+            ? FontStyle.normal
+            : FontStyle.italic,
+      );
+    }
+    notifyListeners();
+  }
+
+  void underline() {
+    if (field == 'title') {
+      titleStyles = titleStyles.copyWith(
+        decoration: titleStyles.decoration == TextDecoration.underline
+            ? TextDecoration.none
+            : TextDecoration.underline,
+        decorationColor: underlineColor,
+      );
+    } else {
+      pointStyle = pointStyle.copyWith(
+        decoration: pointStyle.decoration == TextDecoration.underline
+            ? TextDecoration.none
+            : TextDecoration.underline,
+        decorationColor: underlineColor,
+      );
+    }
+    notifyListeners();
+  }
+
+  void h1() {
+    if (field == 'title') {
+      titleStyles = titleStyles.copyWith(fontSize: 26);
+    } else {
+      pointStyle = pointStyle.copyWith(fontSize: 26);
+    }
+    notifyListeners();
+  }
+
+  void h2() {
+    if (field == 'title') {
+      titleStyles = titleStyles.copyWith(fontSize: 22);
+    } else {
+      pointStyle = pointStyle.copyWith(fontSize: 22);
+    }
+    notifyListeners();
+  }
+
+  void h3() {
+    if (field == 'title') {
+      titleStyles = titleStyles.copyWith(fontSize: 18);
+    } else {
+      pointStyle = pointStyle.copyWith(fontSize: 18);
+    }
+    notifyListeners();
+  }
+
+  void setColor(Color color) {
+    textColor = color;
+    underlineColor = color;
+    if (field == 'title') {
+      titleStyles = titleStyles.copyWith(color: color);
+    } else {
+      pointColor = color;
+      pointStyle = pointStyle.copyWith(color: color);
+      notifyListeners();
+    }
+    notifyListeners();
+  }
+
+  void clearStyle() {
+    titleStyles = TextStyle(
+        fontSize: 26,
+        color: AppColors.text,
+        decoration: TextDecoration.none,
+        decorationColor: AppColors.transparent);
+    textColor = AppColors.text;
+    pointColor = AppColors.text;
+    underlineColor = AppColors.text;
+    pointStyle = TextStyle(
+        fontSize: 26, color: AppColors.text, decoration: TextDecoration.none);
+    field = 'title';
     notifyListeners();
   }
 
@@ -101,13 +256,6 @@ class ListNoteProvider extends ChangeNotifier {
       subListNotes[ids].view = !subListNotes[ids].view;
       notifyListeners();
     }
-  }
-
-  List notesPointController = [TextEditingController()];
-
-  void addNote(int index) {
-    notesPointController.insert(index + 1, TextEditingController());
-    notifyListeners();
   }
 
   Future<void> loadSubNote(int listNoteId) async {
@@ -132,6 +280,7 @@ class ListNoteProvider extends ChangeNotifier {
     subListNotes.removeWhere(
       (element) => element.id == id,
     );
+    loadSubNote(currentNoteId);
     notifyListeners();
   }
 
@@ -147,14 +296,5 @@ class ListNoteProvider extends ChangeNotifier {
           (element) => element.listNoteId == listNoteId,
         )
         .toList();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    listTitle.dispose();
-    for (var controller in notesPointController) {
-      controller.dispose();
-    }
   }
 }

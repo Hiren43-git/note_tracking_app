@@ -6,11 +6,10 @@ import 'package:note_tracking_app/Core/Model/Note%20Model/sub_note_model.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
+import 'package:note_tracking_app/Module/Simple%20Note/Widget/bottom_navigation_bar.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Widget/note.dart';
-import 'package:note_tracking_app/Module/Simple%20Note/Widget/styleButton.dart';
-import 'package:note_tracking_app/Module/Simple%20Note/Widget/styleColor.dart';
+import 'package:note_tracking_app/Module/Simple%20Note/Widget/save_button.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Widget/textField_widget.dart';
-import 'package:note_tracking_app/Module/Welcome/Widget/text_widget.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
 
@@ -29,33 +28,39 @@ class NoteScreen extends StatefulWidget {
 }
 
 class _NoteScreenState extends State<NoteScreen> {
+  late ListNoteProvider listProvider;
+  late VoidCallback titleListener;
+  final Map pointListener = {};
+  bool initialized = false;
+
   @override
   void initState() {
     super.initState();
+    final provider = Provider.of<NoteProvider>(context, listen: false);
+    final listProvider = Provider.of<ListNoteProvider>(context, listen: false);
     if (widget.subNote != null) {
-      Provider.of<NoteProvider>(context, listen: false).title.text =
-          widget.subNote!.title;
-      Provider.of<NoteProvider>(context, listen: false).description.text =
-          widget.subNote!.description;
+      provider.title.text = widget.subNote!.title;
+      provider.description.text = widget.subNote!.description;
+      provider.titleStyles =
+          SubNoteModel.decodeStyle(widget.subNote!.titleStyle);
+      provider.desStyle =
+          SubNoteModel.decodeStyle(widget.subNote!.descriptionStyle);
     }
     if (widget.note != null) {
-      Provider.of<NoteProvider>(context, listen: false).title.text =
-          widget.note!.title;
-      Provider.of<NoteProvider>(context, listen: false).description.text =
-          widget.note!.description;
+      provider.title.text = widget.note!.title;
+      provider.description.text = widget.note!.description;
+      provider.titleStyles = NoteModel.decodeStyle(widget.note!.titleStyle);
+      provider.desStyle = NoteModel.decodeStyle(widget.note!.descriptionStyle);
     }
     if (widget.listNote != null) {
-      Provider.of<ListNoteProvider>(context, listen: false).listTitle.text =
-          widget.listNote!.title;
-
-      while (Provider.of<ListNoteProvider>(context, listen: false)
-              .notesPointController
-              .length <
+      listProvider.listTitle.text = widget.listNote!.title;
+      listProvider.titleStyles =
+          ListNoteModel.decodeStyle(widget.listNote!.titleStyle);
+      while (listProvider.notesPointController.length <
           widget.listNote!.points.length) {
         if (widget.listNote!.points.isNotEmpty) {
-          Provider.of<ListNoteProvider>(context, listen: false)
-              .notesPointController
-              .add(TextEditingController());
+          listProvider.notesPointController.add(TextEditingController());
+          listProvider.pointFocus.add(FocusNode());
         } else {
           widget.listNote!.points.length = widget.listNote!.points.length - 1;
         }
@@ -67,16 +72,23 @@ class _NoteScreenState extends State<NoteScreen> {
           Provider.of<ListNoteProvider>(context, listen: false)
               .notesPointController
               .removeAt(i);
+          Provider.of<ListNoteProvider>(context, listen: false)
+              .pointFocus
+              .removeAt(i);
         } else {
           Provider.of<ListNoteProvider>(context, listen: false)
               .notesPointController[i]
               .text = widget.listNote!.points[i];
+          Provider.of<ListNoteProvider>(context, listen: false).pointStyle =
+              ListNoteModel.decodeStyle(widget.listNote!.pointsStyle);
         }
       }
     }
     if (widget.subListNote != null) {
       Provider.of<ListNoteProvider>(context, listen: false).listTitle.text =
           widget.subListNote!.title;
+      Provider.of<ListNoteProvider>(context, listen: false).titleStyles =
+          SubListNoteModel.decodeStyle(widget.subListNote!.titleStyle);
 
       while (Provider.of<ListNoteProvider>(context, listen: false)
               .notesPointController
@@ -86,6 +98,9 @@ class _NoteScreenState extends State<NoteScreen> {
           Provider.of<ListNoteProvider>(context, listen: false)
               .notesPointController
               .add(TextEditingController());
+          Provider.of<ListNoteProvider>(context, listen: false)
+              .pointFocus
+              .add(FocusNode());
         } else {
           widget.subListNote!.points.length =
               widget.subListNote!.points.length - 1;
@@ -98,20 +113,75 @@ class _NoteScreenState extends State<NoteScreen> {
           Provider.of<ListNoteProvider>(context, listen: false)
               .notesPointController
               .removeAt(i);
+          Provider.of<ListNoteProvider>(context, listen: false)
+              .pointFocus
+              .removeAt(i);
         } else {
           Provider.of<ListNoteProvider>(context, listen: false)
               .notesPointController[i]
               .text = widget.subListNote!.points[i];
+          Provider.of<ListNoteProvider>(context, listen: false).pointStyle =
+              SubListNoteModel.decodeStyle(widget.subListNote!.pointsStyle);
         }
       }
     }
-    if (Provider.of<ListNoteProvider>(context, listen: false)
-        .notesPointController
-        .isEmpty) {
-      Provider.of<ListNoteProvider>(context, listen: false)
-          .notesPointController
-          .add(TextEditingController());
+
+    if (listProvider.notesPointController.isEmpty) {
+      listProvider.notesPointController.add(TextEditingController());
+      listProvider.pointFocus.add(FocusNode());
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    listProvider = Provider.of<ListNoteProvider>(context, listen: false);
+
+    if (!initialized) {
+      titleListener = () {
+        if (!mounted) return;
+        if (mounted && listProvider.titleFocus.hasFocus) {
+          setState(() {
+            listProvider.field = 'title';
+          });
+        } else {
+          setState(() {
+            listProvider.field = 'point';
+          });
+        }
+      };
+
+      listProvider.addListener(titleListener);
+      for (var node in listProvider.pointFocus) {
+        addPointListener(node);
+      }
+      initialized = true;
+    }
+  }
+
+  void addPointListener(FocusNode node) {
+    final listener = () {
+      if (!mounted) return;
+      if (mounted && node.hasFocus) {
+        setState(() {
+          listProvider.field = 'point';
+        });
+      } else {
+        setState(() {
+          listProvider.field = 'title';
+        });
+      }
+    };
+    node.addListener(listener);
+    pointListener[node] = listener;
+  }
+
+  @override
+  void dispose() {
+    if (initialized) {
+      listProvider.disposePoint();
+    }
+    super.dispose();
   }
 
   @override
@@ -132,6 +202,13 @@ class _NoteScreenState extends State<NoteScreen> {
           child: GestureDetector(
             onTap: () {
               Navigator.of(context).pop();
+              provider.clearStyle();
+              for (int i = 0;
+                  i < listProvider.notesPointController.length;
+                  i++) {
+                listProvider.notesPointController[i];
+                listProvider.clearStyle();
+              }
               provider.title.clear();
               provider.description.clear();
               listProvider.listTitle.clear();
@@ -167,8 +244,13 @@ class _NoteScreenState extends State<NoteScreen> {
                           noteId: provider.currentNoteId,
                           title: provider.title.text,
                           description: provider.description.text,
+                          titleStyle:
+                              SubNoteModel.styleToJson(provider.titleStyles),
+                          descriptionStyle:
+                              SubNoteModel.styleToJson(provider.desStyle),
                         );
                         await provider.updateSubNote(update);
+                        provider.clearStyle();
                         await provider.loadSubNote(provider.currentNoteId);
                       } else {
                         provider.addSubNotes(
@@ -176,11 +258,18 @@ class _NoteScreenState extends State<NoteScreen> {
                             noteId: provider.currentNoteId,
                             title: provider.title.text,
                             description: provider.description.text,
+                            titleStyle:
+                                SubNoteModel.styleToJson(provider.titleStyles),
+                            descriptionStyle:
+                                SubNoteModel.styleToJson(provider.desStyle),
                           ),
                         );
+                        provider.clearStyle();
+                        provider.subSimple = false;
                       }
                       provider.title.clear();
                       provider.description.clear();
+                      await provider.loadNote(authProvider.currentUserId!);
                       Navigator.of(context).pop();
                     }
                     if (provider.simple == true) {
@@ -190,8 +279,13 @@ class _NoteScreenState extends State<NoteScreen> {
                           userId: widget.note!.userId,
                           title: provider.title.text,
                           description: provider.description.text,
+                          titleStyle:
+                              NoteModel.styleToJson(provider.titleStyles),
+                          descriptionStyle:
+                              NoteModel.styleToJson(provider.desStyle),
                         );
                         await provider.updateNote(update);
+                        provider.clearStyle();
                         provider.title.clear();
                         provider.description.clear();
                       } else {
@@ -200,8 +294,13 @@ class _NoteScreenState extends State<NoteScreen> {
                             userId: authProvider.currentUserId!,
                             title: provider.title.text,
                             description: provider.description.text,
+                            titleStyle:
+                                NoteModel.styleToJson(provider.titleStyles),
+                            descriptionStyle:
+                                NoteModel.styleToJson(provider.desStyle),
                           ),
                         );
+                        provider.clearStyle();
                       }
                       await provider.loadNote(authProvider.currentUserId!);
                       provider.title.clear();
@@ -234,8 +333,19 @@ class _NoteScreenState extends State<NoteScreen> {
                                 (e) => e.text,
                               )
                               .toList(),
+                          titleStyle: ListNoteModel.styleToJson(
+                              listProvider.titleStyles),
+                          pointsStyle: ListNoteModel.styleToJson(
+                              listProvider.pointStyle),
                         );
                         await listProvider.updateSubNote(update);
+                        listProvider.clearStyle();
+                        for (int i = 0;
+                            i < listProvider.notesPointController.length;
+                            i++) {
+                          listProvider.notesPointController[i];
+                          listProvider.clearStyle();
+                        }
                         await listProvider
                             .loadSubNote(listProvider.currentNoteId);
                       } else {
@@ -248,11 +358,25 @@ class _NoteScreenState extends State<NoteScreen> {
                                   (e) => e.text,
                                 )
                                 .toList(),
+                            titleStyle: ListNoteModel.styleToJson(
+                                listProvider.titleStyles),
+                            pointsStyle: ListNoteModel.styleToJson(
+                                listProvider.pointStyle),
                           ),
                         );
+                        listProvider.clearStyle();
+                        for (int i = 0;
+                            i < listProvider.notesPointController.length;
+                            i++) {
+                          listProvider.notesPointController[i];
+                          listProvider.clearStyle();
+                        }
+                        provider.subList = false;
                       }
                       listProvider.listTitle.clear();
                       listProvider.notesPointController.clear();
+                      listProvider.pointFocus.clear();
+                      await listProvider.loadNote(authProvider.currentUserId!);
                       Navigator.of(context).pop();
                     }
                     if (provider.list == true) {
@@ -266,9 +390,19 @@ class _NoteScreenState extends State<NoteScreen> {
                                 (e) => e.text,
                               )
                               .toList(),
+                          titleStyle: ListNoteModel.styleToJson(
+                              listProvider.titleStyles),
+                          pointsStyle: ListNoteModel.styleToJson(
+                              listProvider.pointStyle),
                         );
-
                         await listProvider.updateNote(update);
+                        listProvider.clearStyle();
+                        for (int i = 0;
+                            i < listProvider.notesPointController.length;
+                            i++) {
+                          listProvider.notesPointController[i];
+                          listProvider.clearStyle();
+                        }
                       } else {
                         listProvider.addNotes(
                           ListNoteModel(
@@ -279,52 +413,31 @@ class _NoteScreenState extends State<NoteScreen> {
                                   (e) => e.text,
                                 )
                                 .toList(),
+                            titleStyle: ListNoteModel.styleToJson(
+                                listProvider.titleStyles),
+                            pointsStyle: ListNoteModel.styleToJson(
+                                listProvider.pointStyle),
                           ),
                         );
+                        listProvider.clearStyle();
+                        for (int i = 0;
+                            i < listProvider.notesPointController.length;
+                            i++) {
+                          listProvider.notesPointController[i];
+                          listProvider.clearStyle();
+                        }
                       }
                       await listProvider.loadNote(authProvider.currentUserId!);
                       listProvider.listTitle.clear();
                       listProvider.notesPointController.clear();
+                      listProvider.pointFocus.clear();
                       Navigator.of(context).pop();
                     }
                   }
                   provider.list = true;
                 }
               },
-              child: Container(
-                height: 36,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(
-                    20,
-                  ),
-                  color: AppColors.button,
-                ),
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      TextWidget(
-                        color: AppColors.title,
-                        size: 16,
-                        text: AppStrings.save,
-                        weight: FontWeight.bold,
-                      ),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      Image(
-                        height: 18,
-                        image: AssetImage(
-                          'assets/Images/Icons/check.png',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              child: saveButton(),
             ),
           ),
         ],
@@ -338,10 +451,23 @@ class _NoteScreenState extends State<NoteScreen> {
                 height: 34,
               ),
               if (provider.simple == true || provider.subSimple == true)
-                textField(provider, provider.title, AppStrings.defaultTitle, 1),
+                textField(
+                  provider,
+                  provider.title,
+                  AppStrings.defaultTitle,
+                  1,
+                  provider.titleFocus,
+                  provider.titleStyles,
+                ),
               if (provider.simple == true || provider.subSimple == true)
-                textField(provider, provider.description,
-                    AppStrings.description, null),
+                textField(
+                  provider,
+                  provider.description,
+                  AppStrings.description,
+                  null,
+                  provider.descriptionFocus,
+                  provider.desStyle,
+                ),
               if (provider.list == true || provider.subList == true) ...[
                 listTextField(
                   provider,
@@ -357,10 +483,8 @@ class _NoteScreenState extends State<NoteScreen> {
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
-                    print('list ${listProvider.notesPointController.length}');
                     return NoteWidget(
                       index: index,
-                      textColor: provider.textColor,
                     );
                   },
                 )
@@ -369,143 +493,7 @@ class _NoteScreenState extends State<NoteScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Divider(
-              thickness: 1,
-              color: AppColors.divider,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  styleButton(
-                    AppStrings.bold,
-                    () => provider.style(
-                      TextStyle(
-                        fontWeight: FontWeight.bold,
-                        decoration: TextDecoration.none,
-                        fontStyle: FontStyle.normal,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: width * 0.113,
-                  ),
-                  styleButton(
-                    AppStrings.underLine,
-                    () => provider.style(
-                      TextStyle(
-                        decoration: TextDecoration.underline,
-                        fontStyle: FontStyle.normal,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: width * 0.113,
-                  ),
-                  styleButton(
-                    AppStrings.italic,
-                    () => provider.style(
-                      TextStyle(
-                        decoration: TextDecoration.none,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: width * 0.08,
-                  ),
-                  Container(
-                    height: 18,
-                    width: 2,
-                    color: AppColors.divider,
-                  ),
-                  SizedBox(
-                    width: width * 0.046,
-                  ),
-                  styleButton(
-                    AppStrings.h1,
-                    () => provider.style(
-                      TextStyle(fontSize: 26),
-                    ),
-                  ),
-                  SizedBox(
-                    width: width * 0.065,
-                  ),
-                  styleButton(
-                    AppStrings.h2,
-                    () => provider.style(
-                      TextStyle(fontSize: 22),
-                    ),
-                  ),
-                  SizedBox(
-                    width: width * 0.065,
-                  ),
-                  styleButton(
-                    AppStrings.h3,
-                    () => provider.style(
-                      TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 12,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Container(
-                  height: 42,
-                  width: 42,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: provider.textColor,
-                      width: 1,
-                    ),
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: TextWidget(
-                    color: provider.textColor,
-                    size: 24,
-                    text: AppStrings.a,
-                    weight: FontWeight.bold,
-                  ),
-                ),
-                Container(
-                  height: 18,
-                  width: 2,
-                  color: AppColors.divider,
-                ),
-                StyleColor(
-                  color: AppColors.styleColor,
-                ),
-                StyleColor(
-                  color: AppColors.styleColor2,
-                ),
-                StyleColor(
-                  color: AppColors.styleColor3,
-                ),
-                StyleColor(
-                  color: AppColors.styleColor4,
-                ),
-                StyleColor(
-                  color: AppColors.styleColor5,
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 6,
-            )
-          ],
-        ),
-      ),
+      bottomNavigationBar: bottomNavigationBar(provider, listProvider, width),
     );
   }
 }

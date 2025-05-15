@@ -49,6 +49,7 @@ class _ListWidgetState extends State<ListWidget> {
                           listProvider.listNotes.isNotEmpty) {
                         return GestureDetector(
                           onTap: () {
+                            provider.clearStyle();
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) => NoteScreen(),
@@ -103,8 +104,8 @@ class _ListWidgetState extends State<ListWidget> {
                             provider.simple = false;
                             provider.subList = false;
                             provider.subSimple = false;
-                            provider.title.clear();
-                            provider.description.clear();
+                            listProvider.listTitle.clear();
+                            listProvider.notesPointController.clear();
                           },
                           child: Container(
                             decoration: BoxDecoration(

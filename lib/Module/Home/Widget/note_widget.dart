@@ -43,6 +43,7 @@ class _NoteWidgetState extends State<NoteWidget> {
                           provider.notes.isNotEmpty) {
                         return GestureDetector(
                           onTap: () {
+                            provider.clearStyle();
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) => NoteScreen(),

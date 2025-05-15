@@ -39,6 +39,7 @@ class _MainNotesState extends State<MainNotes> {
                   ),
                   GestureDetector(
                     onLongPress: () {
+                      provider.getCurrentNoteId(widget.noteId!);
                       provider.deleteNote(provider.notes[widget.index].id!);
                     },
                     child: Container(
@@ -68,6 +69,7 @@ class _MainNotesState extends State<MainNotes> {
                                 ),
                                 GestureDetector(
                                   onTap: () {
+                                    provider.simple = false;
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (context) => NoteScreen(
@@ -138,6 +140,9 @@ class _MainNotesState extends State<MainNotes> {
                       ),
                     ),
                   ),
+                  SizedBox(
+                    height: 16,
+                  ),
                 ],
               );
             },
@@ -145,8 +150,7 @@ class _MainNotesState extends State<MainNotes> {
           (provider.subNotes.isNotEmpty)
               ? Consumer<NoteProvider>(
                   builder: (context, provider, child) {
-                    final subNotes = provider.getSubNotes(
-                        (widget.noteId != null) ? widget.noteId! : 0);
+                    final subNotes = provider.getSubNotes(widget.noteId!);
                     return ListView.builder(
                       physics: NeverScrollableScrollPhysics(),
                       scrollDirection: Axis.vertical,
@@ -161,7 +165,9 @@ class _MainNotesState extends State<MainNotes> {
                             ),
                             GestureDetector(
                               onLongPress: () {
+                                provider.getCurrentNoteId(widget.noteId!);
                                 provider.deleteSubNote(subNotes[index].id!);
+                                provider.loadSubNote(widget.noteId!);
                               },
                               child: Container(
                                 width: double.infinity,

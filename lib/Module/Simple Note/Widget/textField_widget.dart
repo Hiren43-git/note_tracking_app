@@ -4,12 +4,12 @@ import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.da
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 
 TextField textField(NoteProvider provider, TextEditingController controller,
-    String hintText, int? line) {
+    String hintText, int? line, FocusNode focusNode, TextStyle style) {
   return TextField(
+    focusNode: focusNode,
     maxLines: line,
     controller: controller,
-    style: provider.textStyle.copyWith(
-        color: provider.textColor, decorationColor: provider.textColor),
+    style: style,
     cursorColor: AppColors.text,
     decoration: InputDecoration(
       border: InputBorder.none,
@@ -29,9 +29,9 @@ TextField listTextField(
   String hintText,
 ) {
   return TextField(
+    focusNode: listProvider.titleFocus,
     controller: controller,
-    style: provider!.textStyle.copyWith(
-        color: provider.textColor, decorationColor: provider.textColor),
+    style: listProvider.titleStyles,
     cursorColor: AppColors.text,
     decoration: InputDecoration(
       border: InputBorder.none,

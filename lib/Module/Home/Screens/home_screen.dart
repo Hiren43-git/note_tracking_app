@@ -55,7 +55,6 @@ class _HomeScreenState extends State<HomeScreen>
                 title: Padding(
                   padding: const EdgeInsets.only(bottom: 29.0),
                   child: TextField(
-                    // controller: searchController,
                     cursorColor: AppColors.title,
                     style: TextStyle(color: AppColors.title),
                     onTap: () {
@@ -65,35 +64,6 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       );
                     },
-                    // onChanged: (value) {
-                    //   if (value.trim().isNotEmpty) {
-                    //     if (tabController.index == 0) {
-                    //       provider.search(value.trim());
-                    //     }
-                    //     if (tabController.index == 1) {
-                    //       listProvider.search(value.trim());
-                    //     }
-                    //   } else {
-                    //     if (tabController.index == 0) {
-                    //       int? id =
-                    //           Provider.of<AuthProvider>(context, listen: false)
-                    //               .currentUserId;
-                    //       if (id != 0) {
-                    //         provider.clearSearch(id!);
-                    //         searchController.clear();
-                    //       }
-                    //     }
-                    //     if (tabController.index == 1) {
-                    //       int? id =
-                    //           Provider.of<AuthProvider>(context, listen: false)
-                    //               .currentUserId;
-                    //       if (id != 0) {
-                    //         listProvider.clearSearch(id!);
-                    //         searchController.clear();
-                    //       }
-                    //     }
-                    //   }
-                    // },
                     decoration: InputDecoration(
                       prefixIcon: Icon(
                         Icons.search,

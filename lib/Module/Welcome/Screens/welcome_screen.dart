@@ -205,7 +205,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               authProvider
                                   .validPassword(authProvider.password.text) &&
                               authProvider.password.text ==
-                                  authProvider.confirmPassword.text) {
+                                  authProvider.confirmPassword.text &&
+                              authProvider.name.text.isNotEmpty) {
                             final user = AuthModel(
                               name: authProvider.name.text,
                               email: authProvider.email.text,
@@ -245,19 +246,32 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           }
                         }
                       } else {
-                        authProvider.currentUserName = authProvider.name.text;
-                        final update = AuthModel(
-                          id: authProvider.currentUserId,
-                          name: authProvider.currentUserName,
-                          email: authProvider.email.text,
-                          password: authProvider.password.text,
-                          image: (authProvider.image != null)
-                              ? authProvider.image!.path
-                              : AppStrings.image,
-                        );
-                        authProvider.updateUser(update);
-
-                        Navigator.pop(context);
+                        if (key.currentState!.validate()) {
+                          if (authProvider
+                                  .validEmail(authProvider.email.text) &&
+                              authProvider.name.text.isNotEmpty) {
+                            authProvider.currentUserName =
+                                authProvider.name.text;
+                            final update = AuthModel(
+                              id: authProvider.currentUserId,
+                              name: authProvider.currentUserName,
+                              email: authProvider.email.text,
+                              password: authProvider.password.text,
+                              image: (authProvider.image != null)
+                                  ? authProvider.image!.path
+                                  : AppStrings.image,
+                            );
+                            await authProvider.updateUser(update);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  AppStrings.profileUpdate,
+                                ),
+                              ),
+                            );
+                            Navigator.pop(context);
+                          }
+                        }
                       }
                     },
                     child: ButtonWidget(

@@ -2,11 +2,13 @@ class AppStrings {
   static String remind = 'Remind me';
   static String notetaking = 'Note taking made easier';
   static String image = 'assets/Images/manager.png';
+  static String saveImage = 'assets/Images/Icons/check.png';
   static String editProfile = 'Edit profile';
   static String email = 'Email address';
   static String emailNotExist = 'Email address does not exist';
   static String enterEmail = 'Enter email';
   static String invalidEmail = 'Invalid Email address';
+  static String noteNotFound = 'Note not found';
   static String name = 'Name';
   static String enterName = 'Enter your name';
   static String description = 'Description';
@@ -52,4 +54,5 @@ class AppStrings {
   static String signUpSuccess = 'Signup Successfully !';
   static String loginSuccess = 'Login Successfully !';
   static String logout = 'Logout';
+  static String profileUpdate = 'Profile Edited Successfully !';
 }

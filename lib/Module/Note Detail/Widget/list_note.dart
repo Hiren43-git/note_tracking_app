@@ -32,7 +32,9 @@ class _ListNotesState extends State<ListNotes> {
               final note = listProvider.listNotes.length > widget.index
                   ? listProvider.listNotes[widget.index]
                   : null;
-              if (note == null) return SizedBox();
+              if (note == null) {
+                SizedBox();
+              }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -41,8 +43,12 @@ class _ListNotesState extends State<ListNotes> {
                   ),
                   GestureDetector(
                     onLongPress: () {
+                      listProvider.getCurrentNoteId(widget.listNoteId!);
                       listProvider
                           .deleteNote(listProvider.listNotes[widget.index].id!);
+                      if (note == null) {
+                        Navigator.of(context).pop();
+                      }
                     },
                     child: Container(
                       width: double.infinity,
@@ -72,8 +78,7 @@ class _ListNotesState extends State<ListNotes> {
                                 ),
                                 GestureDetector(
                                   onTap: () {
-                                    provider.simple = false;
-
+                                    provider.list = false;
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (context) => NoteScreen(
@@ -83,6 +88,7 @@ class _ListNotesState extends State<ListNotes> {
                                       ),
                                     );
                                     provider.list = true;
+                                    provider.simple = false;
                                     listProvider.listTitle.clear();
                                     listProvider.notesPointController.clear();
                                   },
@@ -216,7 +222,10 @@ class _ListNotesState extends State<ListNotes> {
                             GestureDetector(
                               onLongPress: () {
                                 listProvider
+                                    .getCurrentNoteId(widget.listNoteId!);
+                                listProvider
                                     .deleteSubNote(subListNotes[index].id!);
+                                listProvider.loadSubNote(widget.listNoteId!);
                               },
                               child: Container(
                                 width: double.infinity,
@@ -292,8 +301,8 @@ class _ListNotesState extends State<ListNotes> {
                                                         (element) =>
                                                             !(element.key ==
                                                                     listProvider
-                                                                            .subListNotes[widget
-                                                                                .index]
+                                                                            .subListNotes[
+                                                                                index]
                                                                             .points
                                                                             .length -
                                                                         1 &&
@@ -316,7 +325,7 @@ class _ListNotesState extends State<ListNotes> {
                                                           .where(
                                                             (element) =>
                                                                 !(element.key ==
-                                                                        listProvider.subListNotes[widget.index].points.length -
+                                                                        listProvider.subListNotes[index].points.length -
                                                                             1 &&
                                                                     element
                                                                         .value

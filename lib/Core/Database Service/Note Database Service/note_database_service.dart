@@ -32,19 +32,10 @@ class NoteDatabaseService {
       whereArgs: [note.id],
     );
   }
-  
+
   Future<void> deleteNote(int id) async {
     final dbClient = await dbHelper.database;
     await dbClient!.delete(
-      'notes',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<void> getNoteById(int id) async {
-    final dbClient = await dbHelper.database;
-    await dbClient!.query(
       'notes',
       where: 'id = ?',
       whereArgs: [id],

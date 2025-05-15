@@ -49,6 +49,7 @@ class _AddWidgetState extends State<AddWidget> {
                 ),
                 GestureDetector(
                   onTap: () {
+                    provider.clearStyle();
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => NoteScreen(),
@@ -58,6 +59,8 @@ class _AddWidgetState extends State<AddWidget> {
                     provider.subList = false;
                     provider.subSimple = false;
                     provider.simple = true;
+                    provider.title.clear();
+                    provider.description.clear();
                   },
                   child: TextWidget(
                     color: AppColors.text,
@@ -71,6 +74,7 @@ class _AddWidgetState extends State<AddWidget> {
                 ),
                 GestureDetector(
                   onTap: () {
+                    provider.clearStyle();
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => NoteScreen(),

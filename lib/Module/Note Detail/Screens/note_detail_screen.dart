@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Note%20Detail/Widget/list_note.dart';
@@ -25,6 +26,8 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
     if (widget.noteId != null) {
       Provider.of<NoteProvider>(context, listen: false)
           .loadSubNote(widget.noteId!);
+      Provider.of<NoteProvider>(context, listen: false).loadNote(
+          Provider.of<AuthProvider>(context, listen: false).currentUserId!);
     }
     if (widget.listNoteId != null) {
       Provider.of<ListNoteProvider>(context, listen: false)
