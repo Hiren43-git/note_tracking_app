@@ -1,9 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Database%20Service/Note%20Database%20Service/note_database_service.dart';
 import 'package:note_tracking_app/Core/Database%20Service/Note%20Database%20Service/sub_note_database_service.dart';
 import 'package:note_tracking_app/Core/Model/Note%20Model/note_model.dart';
 import 'package:note_tracking_app/Core/Model/Note%20Model/sub_note_model.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
+import 'package:provider/provider.dart';
 
 import '../Auth Provider/auth_provider.dart';
 
@@ -12,7 +15,7 @@ class NoteProvider extends ChangeNotifier {
   final SubNoteDatabaseService subNoteDatabaseService =
       SubNoteDatabaseService();
   List<NoteModel> notes = [];
-  List<NoteModel> searchNotes = [];
+  List searchNotes = [];
   List<SubNoteModel> subNotes = [];
   bool loading = false;
 
@@ -33,9 +36,11 @@ class NoteProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> deleteNote(int id) async {
-    notes.removeWhere((element) => element.id == id);
+  Future<void> deleteNote(int id, BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
     await noteDatabaseService.deleteNote(id);
+    notes.removeWhere((element) => element.id == id);
     final mainSubNotes = subNotes
         .where(
           (element) => element.noteId == id,
@@ -43,9 +48,8 @@ class NoteProvider extends ChangeNotifier {
         .toList();
     if (mainSubNotes.isNotEmpty) {
       final newNote = mainSubNotes.first;
-
       final note1 = NoteModel(
-        userId: AuthProvider().currentUserId!,
+        userId: authProvider.currentUserId!,
         title: newNote.title,
         id: id,
         description: newNote.description,
@@ -58,21 +62,22 @@ class NoteProvider extends ChangeNotifier {
       );
       await subNoteDatabaseService.deleteSubNote(newNote.id!);
       await noteDatabaseService.addNote(note1);
-      loadNote(AuthProvider().currentUserId!);
+      loadNote(authProvider.currentUserId!);
       loadSubNote(currentNoteId);
       notifyListeners();
+    } else {
+      Navigator.of(context).pop();
+      notifyListeners();
     }
-    notifyListeners();
   }
 
-  Future<void> search(String search) async {
+  Future<void> search(String search, BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
     if (search.isNotEmpty) {
-      final result = await noteDatabaseService.searchResult(search);
-      searchNotes = result
-          .map(
-            (e) => NoteModel.fromMap(e),
-          )
-          .toList();
+      final result = await noteDatabaseService.searchResult(
+          search, authProvider.currentUserId!);
+      searchNotes = result;
       notifyListeners();
     }
     notifyListeners();
@@ -309,5 +314,86 @@ class NoteProvider extends ChangeNotifier {
           (element) => element.noteId == noteId,
         )
         .toList();
+  }
+
+  Future<void> addNoteInSimpleOrSubSimple(
+      BuildContext context, SubNoteModel? subNote, NoteModel? note) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    if (title.text.isEmpty || description.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Add note data !',
+          ),
+          backgroundColor: AppColors.button,
+        ),
+      );
+    } else {
+      if (subSimple == true) {
+        simple = false;
+        if (subNote != null) {
+          final update = SubNoteModel(
+            id: subNote.id,
+            noteId: currentNoteId,
+            title: title.text,
+            description: description.text,
+            titleStyle: SubNoteModel.styleToJson(titleStyles),
+            descriptionStyle: SubNoteModel.styleToJson(desStyle),
+          );
+          await updateSubNote(update);
+          clearStyle();
+          await loadSubNote(currentNoteId);
+        } else {
+          addSubNotes(
+            SubNoteModel(
+              noteId: currentNoteId,
+              title: title.text,
+              description: description.text,
+              titleStyle: SubNoteModel.styleToJson(titleStyles),
+              descriptionStyle: SubNoteModel.styleToJson(desStyle),
+            ),
+          );
+          clearStyle();
+          subSimple = false;
+        }
+        title.clear();
+        description.clear();
+        await loadNote(authProvider.currentUserId!);
+        Navigator.of(context).pop();
+      }
+      if (simple == true) {
+        if (note != null) {
+          final update = NoteModel(
+            id: note.id,
+            userId: note.userId,
+            title: title.text,
+            description: description.text,
+            titleStyle: NoteModel.styleToJson(titleStyles),
+            descriptionStyle: NoteModel.styleToJson(desStyle),
+          );
+          await updateNote(update);
+          clearStyle();
+          title.clear();
+          description.clear();
+        } else {
+          addNotes(
+            NoteModel(
+              userId: authProvider.currentUserId!,
+              title: title.text,
+              description: description.text,
+              titleStyle: NoteModel.styleToJson(titleStyles),
+              descriptionStyle: NoteModel.styleToJson(desStyle),
+            ),
+          );
+          clearStyle();
+        }
+        await loadNote(authProvider.currentUserId!);
+        title.clear();
+        description.clear();
+        Navigator.of(context).pop();
+      }
+    }
+    simple = true;
   }
 }

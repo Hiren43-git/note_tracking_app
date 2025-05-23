@@ -23,6 +23,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<NoteProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
     final listProvider = Provider.of<ListNoteProvider>(context);
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
@@ -30,6 +31,7 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        surfaceTintColor: AppColors.background,
         leading: GestureDetector(
           onTap: () {
             Navigator.of(context).pop();
@@ -54,8 +56,8 @@ class _SearchScreenState extends State<SearchScreen> {
           style: TextStyle(color: AppColors.title),
           onChanged: (value) {
             if (value.trim().isNotEmpty) {
-              provider.search(value.trim());
-              listProvider.search(value.trim());
+              provider.search(value.trim(), context);
+              listProvider.search(value.trim(), context);
             } else {
               int? id = Provider.of<AuthProvider>(context, listen: false)
                   .currentUserId;
@@ -91,12 +93,10 @@ class _SearchScreenState extends State<SearchScreen> {
       body: Padding(
         padding: const EdgeInsets.only(top: 22, right: 26, left: 26, bottom: 0),
         child: SingleChildScrollView(
-          physics: NeverScrollableScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              (provider.searchNotes.isNotEmpty &&
-                      listProvider.searchNotes.isNotEmpty)
+              (provider.searchNotes.isNotEmpty)
                   ? TextWidget(
                       color: AppColors.title,
                       size: 18,
@@ -104,9 +104,11 @@ class _SearchScreenState extends State<SearchScreen> {
                       weight: FontWeight.w600,
                     )
                   : SizedBox(),
-              SizedBox(
-                height: 16,
-              ),
+              (provider.searchNotes.isNotEmpty)
+                  ? SizedBox(
+                      height: 16,
+                    )
+                  : SizedBox(),
               Consumer<NoteProvider>(
                 builder: (context, provider, child) {
                   return provider.searchNotes.isEmpty &&
@@ -136,20 +138,26 @@ class _SearchScreenState extends State<SearchScreen> {
                                 onTap: () {
                                   final note = provider.notes.firstWhere(
                                     (element) =>
-                                        element.title ==
-                                        provider.searchNotes[index].title,
+                                        element.id ==
+                                            provider.searchNotes[index]
+                                                ['noteId'] &&
+                                        element.userId ==
+                                            authProvider.currentUserId,
                                     orElse: () => provider.searchNotes[index],
                                   );
                                   int originalIndex = provider.notes.indexWhere(
                                     (element) =>
                                         element.id ==
-                                        provider.searchNotes[index].id,
+                                            provider.searchNotes[index]
+                                                ['noteId'] &&
+                                        element.userId ==
+                                            authProvider.currentUserId,
                                   );
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (context) => NoteDetailScreen(
                                         index: originalIndex,
-                                        noteId: note.id,
+                                        noteId: note.id!,
                                       ),
                                     ),
                                   );
@@ -182,8 +190,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                         TextWidget(
                                           color: AppColors.text,
                                           size: width * 0.046,
-                                          text:
-                                              provider.searchNotes[index].title,
+                                          text: provider.searchNotes[index]
+                                              ['title'],
                                           weight: FontWeight.bold,
                                           overflow: TextOverflow.ellipsis,
                                           line: 1,
@@ -191,8 +199,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                         TextWidget(
                                           color: AppColors.text,
                                           size: width * 0.038,
-                                          text: provider
-                                              .searchNotes[index].description,
+                                          text: provider.searchNotes[index]
+                                              ['description'],
                                           weight: FontWeight.w500,
                                           overflow: TextOverflow.ellipsis,
                                           line: 4,
@@ -207,11 +215,12 @@ class _SearchScreenState extends State<SearchScreen> {
                         );
                 },
               ),
-              SizedBox(
-                height: 16,
-              ),
-              (provider.searchNotes.isNotEmpty &&
-                      listProvider.searchNotes.isNotEmpty)
+              (provider.searchNotes.isNotEmpty)
+                  ? SizedBox(
+                      height: 16,
+                    )
+                  : SizedBox(),
+              (listProvider.searchNotes.isNotEmpty)
                   ? TextWidget(
                       color: AppColors.title,
                       size: 18,
@@ -232,24 +241,27 @@ class _SearchScreenState extends State<SearchScreen> {
                       (index) {
                         final color = provider
                             .colors[Random().nextInt(provider.colors.length)];
-                        int currentIndex = index;
+                        final points = List<String>.from(
+                            listProvider.searchNotes[index]['points'] ?? []);
                         return GestureDetector(
                           onTap: () {
                             final note = listProvider.listNotes.firstWhere(
                               (element) =>
-                                  element.title ==
-                                  listProvider.searchNotes[index].title,
+                                  element.id ==
+                                  listProvider.searchNotes[index]['listNoteId'],
                               orElse: () => listProvider.searchNotes[index],
                             );
-                            int originalIndex = provider.notes.indexWhere(
+                            int originalIndex =
+                                listProvider.listNotes.indexWhere(
                               (element) =>
-                                  element.id == provider.searchNotes[index].id,
+                                  element.id ==
+                                  listProvider.searchNotes[index]['listNoteId'],
                             );
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (context) => NoteDetailScreen(
                                   index: originalIndex,
-                                  noteId: note.id,
+                                  listNoteId: note.id,
                                 ),
                               ),
                             );
@@ -279,7 +291,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                   TextWidget(
                                     color: AppColors.text,
                                     size: width * 0.046,
-                                    text: listProvider.searchNotes[index].title,
+                                    text: listProvider.searchNotes[index]
+                                        ['title'],
                                     weight: FontWeight.bold,
                                     overflow: TextOverflow.ellipsis,
                                     line: 1,
@@ -287,27 +300,16 @@ class _SearchScreenState extends State<SearchScreen> {
                                   ListView.builder(
                                     shrinkWrap: true,
                                     physics: NeverScrollableScrollPhysics(),
-                                    itemCount: (listProvider
-                                                .listNotes[currentIndex]
-                                                .points
-                                                .length >
-                                            4)
-                                        ? 4
-                                        : listProvider.listNotes[currentIndex]
-                                            .points.length,
+                                    itemCount:
+                                        (points.length > 4) ? 4 : points.length,
                                     itemBuilder: (context, index) {
-                                      final text = listProvider
-                                          .listNotes[currentIndex]
-                                          .points[index];
+                                      final text = points[index];
                                       return text.isNotEmpty
                                           ? TextWidget(
                                               color: AppColors.text,
                                               size: width * 0.038,
-                                              text: listProvider
-                                                      .listNotes[currentIndex]
-                                                      .points[index]
-                                                      .isNotEmpty
-                                                  ? '○ ${listProvider.listNotes[currentIndex].points[index]}'
+                                              text: points[index].isNotEmpty
+                                                  ? '○ ${points[index]}'
                                                   : '',
                                               weight: FontWeight.w500,
                                               overflow: TextOverflow.ellipsis,

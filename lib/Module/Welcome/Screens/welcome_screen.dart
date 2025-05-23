@@ -1,5 +1,6 @@
+// import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:note_tracking_app/Core/Model/Auth%20Model/auth_model.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Screens/login_screen.dart';
@@ -21,15 +22,6 @@ class WelcomeScreen extends StatefulWidget {
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
-  void dispose() {
-    super.dispose();
-    AuthProvider().name.dispose();
-    AuthProvider().email.dispose();
-    AuthProvider().password.dispose();
-    AuthProvider().confirmPassword.dispose();
-  }
-
-  @override
   void initState() {
     if (Provider.of<NoteProvider>(context, listen: false).edit == true) {
       Provider.of<AuthProvider>(context, listen: false).name.text =
@@ -45,9 +37,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final provider = Provider.of<NoteProvider>(context);
 
     final key = GlobalKey<FormState>();
+    final ScrollController singleController = ScrollController();
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      resizeToAvoidBottomInset: true,
       appBar: (provider.edit == true)
           ? AppBar(
               surfaceTintColor: AppColors.background,
@@ -83,6 +77,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           child: Form(
             key: key,
             child: SingleChildScrollView(
+              controller: singleController,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -124,26 +119,35 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   SizedBox(
                     height: 16,
                   ),
-                  TextFieldWidget(
-                    validator: (value) {
-                      if (value!.isNotEmpty) {
-                        if (authProvider.validEmail(value)) {
-                          authProvider.validEmail(value);
+                  if (provider.edit == true) ...[
+                    TextFieldWidget(
+                      controller: authProvider.email,
+                      text: AppStrings.email,
+                      read: true,
+                    ),
+                  ],
+                  if (provider.edit == false) ...[
+                    TextFieldWidget(
+                      validator: (value) {
+                        if (value!.isNotEmpty) {
+                          if (authProvider.validEmail(value)) {
+                            authProvider.validEmail(value);
+                          } else {
+                            authProvider.errorMessage(
+                              context,
+                              AppStrings.invalidEmail,
+                            );
+                          }
                         } else {
-                          authProvider.errorMessage(
-                            context,
-                            AppStrings.invalidEmail,
-                          );
+                          return AppStrings.enterEmail;
                         }
-                      } else {
-                        return AppStrings.enterEmail;
-                      }
-                      return null;
-                    },
-                    controller: authProvider.email,
-                    text: AppStrings.email,
-                    hint: AppStrings.emailText,
-                  ),
+                        return null;
+                      },
+                      controller: authProvider.email,
+                      text: AppStrings.email,
+                      hint: AppStrings.emailText,
+                    ),
+                  ],
                   if (provider.edit == false) ...[
                     SizedBox(
                       height: 16,
@@ -181,7 +185,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   context,
                                   AppStrings.passwordNotMatch,
                                 )
-                              : null;
+                              : AppStrings.passwordRequire;
                         } else {
                           return AppStrings.enterRepeatPassword;
                         }
@@ -200,77 +204,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     onTap: () async {
                       if (provider.edit == false) {
                         if (key.currentState!.validate()) {
-                          if (authProvider
-                                  .validEmail(authProvider.email.text) &&
-                              authProvider
-                                  .validPassword(authProvider.password.text) &&
-                              authProvider.password.text ==
-                                  authProvider.confirmPassword.text &&
-                              authProvider.name.text.isNotEmpty) {
-                            final user = AuthModel(
-                              name: authProvider.name.text,
-                              email: authProvider.email.text,
-                              password: authProvider.password.text,
-                              image: (authProvider.image != null)
-                                  ? authProvider.image!.path
-                                  : AppStrings.image,
-                            );
-                            final result = await authProvider.signUp(user);
-
-                            if (result == AppStrings.success) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    AppStrings.signUpSuccess,
-                                  ),
-                                ),
-                              );
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                  builder: (context) => LoginScreen(),
-                                ),
-                              );
-                              authProvider.email.clear();
-                              authProvider.password.clear();
-                              authProvider.confirmPassword.clear();
-                              authProvider.name.clear();
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    result,
-                                  ),
-                                ),
-                              );
-                            }
-                          }
+                          authProvider.validForSignUp(context);
                         }
                       } else {
                         if (key.currentState!.validate()) {
-                          if (authProvider
-                                  .validEmail(authProvider.email.text) &&
-                              authProvider.name.text.isNotEmpty) {
-                            authProvider.currentUserName =
-                                authProvider.name.text;
-                            final update = AuthModel(
-                              id: authProvider.currentUserId,
-                              name: authProvider.currentUserName,
-                              email: authProvider.email.text,
-                              password: authProvider.password.text,
-                              image: (authProvider.image != null)
-                                  ? authProvider.image!.path
-                                  : AppStrings.image,
-                            );
-                            await authProvider.updateUser(update);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  AppStrings.profileUpdate,
-                                ),
-                              ),
-                            );
-                            Navigator.pop(context);
-                          }
+                          authProvider.validForEditProfile(context);
                         }
                       }
                     },
@@ -299,6 +237,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         authProvider.password.clear();
                         authProvider.confirmPassword.clear();
                         authProvider.name.clear();
+                        authProvider.image = null;
                       },
                       child: Builder(
                         builder: (context) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
+import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Screens/login_screen.dart';
 import 'package:note_tracking_app/Module/Welcome/Widget/text_widget.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
@@ -17,6 +18,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<AuthProvider>(context);
+    final homeProvider = Provider.of<NoteProvider>(context);
     double width = MediaQuery.of(context).size.width;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 26.0),
@@ -64,7 +66,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                       ),
                       TextWidget(
                         color: AppColors.title,
-                        size: 15,
+                        size: 13,
                         text: provider.email.text,
                         overflow: TextOverflow.ellipsis,
                         line: 2,
@@ -80,15 +82,45 @@ class _ProfileWidgetState extends State<ProfileWidget> {
           ),
           GestureDetector(
             onTap: () {
-              provider.logout();
-              provider.name.clear();
-              provider.password.clear();
-              provider.email.clear();
-              provider.confirmPassword.clear();
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => LoginScreen(),
-                ),
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: AlertDialog(
+                      content: Text('Are You Sure you want to logout'),
+                      actions: <Widget>[
+                        ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(false);
+                            },
+                            child: Text(
+                              'cancel',
+                            )),
+                        ElevatedButton(
+                          onPressed: () {
+                            provider.logout();
+                            provider.name.clear();
+                            provider.password.clear();
+                            provider.email.clear();
+                            provider.confirmPassword.clear();
+                            provider.image = null;
+                            homeProvider.selectedIndexOfBottom = 0;
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => LoginScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'Logout',
+                            style: TextStyle(color: AppColors.red),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               );
             },
             child: Row(

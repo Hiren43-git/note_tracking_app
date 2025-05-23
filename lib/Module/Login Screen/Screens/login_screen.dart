@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Database%20Service/database_service.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
+import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Home/Screens/home_screen.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Widget/button_widget.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Widget/divider_widget.dart';
@@ -28,6 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: true);
+    final provider = Provider.of<NoteProvider>(context, listen: true);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -146,6 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   GestureDetector(
                     onTap: () {
+                      provider.edit = false;
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
                           builder: (context) => WelcomeScreen(),

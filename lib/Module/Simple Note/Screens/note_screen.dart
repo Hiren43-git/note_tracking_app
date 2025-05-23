@@ -3,7 +3,6 @@ import 'package:note_tracking_app/Core/Model/List%20Note%20Model/list_note_model
 import 'package:note_tracking_app/Core/Model/List%20Note%20Model/sub_list_model.dart';
 import 'package:note_tracking_app/Core/Model/Note%20Model/note_model.dart';
 import 'package:note_tracking_app/Core/Model/Note%20Model/sub_note_model.dart';
-import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Widget/bottom_navigation_bar.dart';
@@ -29,7 +28,7 @@ class NoteScreen extends StatefulWidget {
 
 class _NoteScreenState extends State<NoteScreen> {
   late ListNoteProvider listProvider;
-  late VoidCallback titleListener;
+  late VoidCallback titleListener;  
   final Map pointListener = {};
   bool initialized = false;
 
@@ -160,7 +159,7 @@ class _NoteScreenState extends State<NoteScreen> {
   }
 
   void addPointListener(FocusNode node) {
-    final listener = () {
+    listener() {
       if (!mounted) return;
       if (mounted && node.hasFocus) {
         setState(() {
@@ -171,7 +170,8 @@ class _NoteScreenState extends State<NoteScreen> {
           listProvider.field = 'title';
         });
       }
-    };
+    }
+
     node.addListener(listener);
     pointListener[node] = listener;
   }
@@ -189,7 +189,6 @@ class _NoteScreenState extends State<NoteScreen> {
     double width = MediaQuery.of(context).size.width;
     final provider = Provider.of<NoteProvider>(context);
     final listProvider = Provider.of<ListNoteProvider>(context);
-    final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
       backgroundColor: AppColors.title,
@@ -226,215 +225,15 @@ class _NoteScreenState extends State<NoteScreen> {
             child: GestureDetector(
               onTap: () async {
                 if (provider.subSimple == true || provider.simple == true) {
-                  if (provider.title.text.isEmpty ||
-                      provider.description.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Add note data !',
-                        ),
-                      ),
-                    );
-                  } else {
-                    if (provider.subSimple == true) {
-                      provider.simple = false;
-                      if (widget.subNote != null) {
-                        final update = SubNoteModel(
-                          id: widget.subNote!.id,
-                          noteId: provider.currentNoteId,
-                          title: provider.title.text,
-                          description: provider.description.text,
-                          titleStyle:
-                              SubNoteModel.styleToJson(provider.titleStyles),
-                          descriptionStyle:
-                              SubNoteModel.styleToJson(provider.desStyle),
-                        );
-                        await provider.updateSubNote(update);
-                        provider.clearStyle();
-                        await provider.loadSubNote(provider.currentNoteId);
-                      } else {
-                        provider.addSubNotes(
-                          SubNoteModel(
-                            noteId: provider.currentNoteId,
-                            title: provider.title.text,
-                            description: provider.description.text,
-                            titleStyle:
-                                SubNoteModel.styleToJson(provider.titleStyles),
-                            descriptionStyle:
-                                SubNoteModel.styleToJson(provider.desStyle),
-                          ),
-                        );
-                        provider.clearStyle();
-                        provider.subSimple = false;
-                      }
-                      provider.title.clear();
-                      provider.description.clear();
-                      await provider.loadNote(authProvider.currentUserId!);
-                      Navigator.of(context).pop();
-                    }
-                    if (provider.simple == true) {
-                      if (widget.note != null) {
-                        final update = NoteModel(
-                          id: widget.note!.id,
-                          userId: widget.note!.userId,
-                          title: provider.title.text,
-                          description: provider.description.text,
-                          titleStyle:
-                              NoteModel.styleToJson(provider.titleStyles),
-                          descriptionStyle:
-                              NoteModel.styleToJson(provider.desStyle),
-                        );
-                        await provider.updateNote(update);
-                        provider.clearStyle();
-                        provider.title.clear();
-                        provider.description.clear();
-                      } else {
-                        provider.addNotes(
-                          NoteModel(
-                            userId: authProvider.currentUserId!,
-                            title: provider.title.text,
-                            description: provider.description.text,
-                            titleStyle:
-                                NoteModel.styleToJson(provider.titleStyles),
-                            descriptionStyle:
-                                NoteModel.styleToJson(provider.desStyle),
-                          ),
-                        );
-                        provider.clearStyle();
-                      }
-                      await provider.loadNote(authProvider.currentUserId!);
-                      provider.title.clear();
-                      provider.description.clear();
-                      Navigator.of(context).pop();
-                    }
-                  }
-                  provider.simple = true;
+                  provider.addNoteInSimpleOrSubSimple(
+                      context, widget.subNote, widget.note);
                 }
                 if (provider.subList == true || provider.list == true) {
-                  if (listProvider.listTitle.text.isEmpty ||
-                      listProvider.notesPointController[0].text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Add note data !',
-                        ),
-                      ),
-                    );
-                  } else {
-                    if (provider.subList == true) {
-                      provider.list = false;
-                      if (widget.subListNote != null) {
-                        final update = SubListNoteModel(
-                          id: widget.subListNote!.id,
-                          listNoteId: listProvider.currentNoteId,
-                          title: listProvider.listTitle.text,
-                          points: listProvider.notesPointController
-                              .map(
-                                (e) => e.text,
-                              )
-                              .toList(),
-                          titleStyle: ListNoteModel.styleToJson(
-                              listProvider.titleStyles),
-                          pointsStyle: ListNoteModel.styleToJson(
-                              listProvider.pointStyle),
-                        );
-                        await listProvider.updateSubNote(update);
-                        listProvider.clearStyle();
-                        for (int i = 0;
-                            i < listProvider.notesPointController.length;
-                            i++) {
-                          listProvider.notesPointController[i];
-                          listProvider.clearStyle();
-                        }
-                        await listProvider
-                            .loadSubNote(listProvider.currentNoteId);
-                      } else {
-                        listProvider.addSubNotes(
-                          SubListNoteModel(
-                            listNoteId: listProvider.currentNoteId,
-                            title: listProvider.listTitle.text,
-                            points: listProvider.notesPointController
-                                .map(
-                                  (e) => e.text,
-                                )
-                                .toList(),
-                            titleStyle: ListNoteModel.styleToJson(
-                                listProvider.titleStyles),
-                            pointsStyle: ListNoteModel.styleToJson(
-                                listProvider.pointStyle),
-                          ),
-                        );
-                        listProvider.clearStyle();
-                        for (int i = 0;
-                            i < listProvider.notesPointController.length;
-                            i++) {
-                          listProvider.notesPointController[i];
-                          listProvider.clearStyle();
-                        }
-                        provider.subList = false;
-                      }
-                      listProvider.listTitle.clear();
-                      listProvider.notesPointController.clear();
-                      listProvider.pointFocus.clear();
-                      await listProvider.loadNote(authProvider.currentUserId!);
-                      Navigator.of(context).pop();
-                    }
-                    if (provider.list == true) {
-                      if (widget.listNote != null) {
-                        final update = ListNoteModel(
-                          id: widget.listNote!.id,
-                          userId: widget.listNote!.userId,
-                          title: listProvider.listTitle.text,
-                          points: listProvider.notesPointController
-                              .map(
-                                (e) => e.text,
-                              )
-                              .toList(),
-                          titleStyle: ListNoteModel.styleToJson(
-                              listProvider.titleStyles),
-                          pointsStyle: ListNoteModel.styleToJson(
-                              listProvider.pointStyle),
-                        );
-                        await listProvider.updateNote(update);
-                        listProvider.clearStyle();
-                        for (int i = 0;
-                            i < listProvider.notesPointController.length;
-                            i++) {
-                          listProvider.notesPointController[i];
-                          listProvider.clearStyle();
-                        }
-                      } else {
-                        listProvider.addNotes(
-                          ListNoteModel(
-                            userId: authProvider.currentUserId!,
-                            title: listProvider.listTitle.text,
-                            points: listProvider.notesPointController
-                                .map(
-                                  (e) => e.text,
-                                )
-                                .toList(),
-                            titleStyle: ListNoteModel.styleToJson(
-                                listProvider.titleStyles),
-                            pointsStyle: ListNoteModel.styleToJson(
-                                listProvider.pointStyle),
-                          ),
-                        );
-                        listProvider.clearStyle();
-                        for (int i = 0;
-                            i < listProvider.notesPointController.length;
-                            i++) {
-                          listProvider.notesPointController[i];
-                          listProvider.clearStyle();
-                        }
-                      }
-                      await listProvider.loadNote(authProvider.currentUserId!);
-                      listProvider.listTitle.clear();
-                      listProvider.notesPointController.clear();
-                      listProvider.pointFocus.clear();
-                      Navigator.of(context).pop();
-                    }
-                  }
-                  provider.list = true;
+                  listProvider.addNoteInListNoteOrSubListNote(
+                    context,
+                    widget.subListNote,
+                    widget.listNote,
+                  );
                 }
               },
               child: saveButton(),

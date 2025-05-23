@@ -44,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<NoteProvider>(context);
+    final TextEditingController temp = TextEditingController(text: '');
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -52,11 +53,23 @@ class _HomeScreenState extends State<HomeScreen>
             ? AppBar(
                 toolbarHeight: 100,
                 backgroundColor: AppColors.background,
+                automaticallyImplyLeading: false,
                 title: Padding(
                   padding: const EdgeInsets.only(bottom: 29.0),
                   child: TextField(
+                    controller: temp,
+                    keyboardType: TextInputType.none,
                     cursorColor: AppColors.title,
                     style: TextStyle(color: AppColors.title),
+                    onChanged: (value) {
+                      if (value.isNotEmpty) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => SearchScreen(),
+                          ),
+                        );
+                      }
+                    },
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(

@@ -1,9 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
+import 'package:note_tracking_app/Module/Note%20Detail/Widget/common_widget.dart';
+import 'package:note_tracking_app/Module/Note%20Detail/Widget/confirmation_dialog.dart';
 import 'package:note_tracking_app/Module/Note%20Detail/Widget/text_view_widget.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Screens/note_screen.dart';
-import 'package:note_tracking_app/Module/Welcome/Widget/text_widget.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
 import 'package:provider/provider.dart';
@@ -30,7 +31,24 @@ class _MainNotesState extends State<MainNotes> {
               final note = provider.notes.length > widget.index
                   ? provider.notes[widget.index]
                   : null;
-              if (note == null) return SizedBox();
+              if (provider.notes.length <= widget.index) {
+                WidgetsBinding.instance.addPostFrameCallback(
+                  (timeStamp) {
+                    if (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                );
+                return SizedBox();
+              }
+              if (note == null) {
+                WidgetsBinding.instance.addPostFrameCallback(
+                  (timeStamp) {
+                    Navigator.of(context).pop();
+                  },
+                );
+                return SizedBox();
+              }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -39,8 +57,18 @@ class _MainNotesState extends State<MainNotes> {
                   ),
                   GestureDetector(
                     onLongPress: () {
-                      provider.getCurrentNoteId(widget.noteId!);
-                      provider.deleteNote(provider.notes[widget.index].id!);
+                      showDialog(
+                        context: context,
+                        builder: (context) => ConfirmationDialog(
+                          text: 'Are You sure you want to delete this note',
+                          onTap: () {
+                            provider.getCurrentNoteId(widget.noteId!);
+                            provider.deleteNote(
+                                provider.notes[widget.index].id!, context);
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      );
                     },
                     child: Container(
                       width: double.infinity,
@@ -54,39 +82,21 @@ class _MainNotesState extends State<MainNotes> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: TextWidget(
-                                    color: AppColors.title,
-                                    size: 20,
-                                    text: provider.notes[widget.index].title,
-                                    weight: FontWeight.bold,
-                                    line: 1,
-                                    overflow: TextOverflow.ellipsis,
+                            CommonRawWidget(
+                              text: provider.notes[widget.index].title,
+                              style: provider.notes[widget.index].titleStyles,
+                              onTap: () {
+                                provider.simple = false;
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => NoteScreen(
+                                      note: provider.notes[widget.index],
+                                    ),
                                   ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    provider.simple = false;
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (context) => NoteScreen(
-                                          note: provider.notes[widget.index],
-                                        ),
-                                      ),
-                                    );
-                                    provider.simple = true;
-                                    provider.list = false;
-                                  },
-                                  child: Icon(
-                                    Icons.edit,
-                                    color: AppColors.title,
-                                    size: 18,
-                                  ),
-                                ),
-                              ],
+                                );
+                                provider.simple = true;
+                                provider.list = false;
+                              },
                             ),
                             SizedBox(
                               height: 6,
@@ -100,39 +110,36 @@ class _MainNotesState extends State<MainNotes> {
                             ),
                             RichText(
                               text: TextSpan(
-                                text: provider.notes[widget.index].view
-                                    ? provider.notes[widget.index].description
-                                    : trimText(
-                                        provider
-                                            .notes[widget.index].description,
-                                        TextStyle(
-                                          color: AppColors.description,
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                        context,
+                                style: provider.notes[widget.index].desStyle,
+                                children: () {
+                                  final result = trimText(
+                                      provider.notes[widget.index].description,
+                                      provider.notes[widget.index].desStyle,
+                                      context);
+                                  final expand =
+                                      provider.notes[widget.index].view;
+                                  final text = expand
+                                      ? provider.notes[widget.index].description
+                                      : result['text'] as String;
+                                  final exist = result['exist'] as bool;
+                                  return [
+                                    TextSpan(text: text),
+                                    if (exist)
+                                      TextSpan(
+                                        text: expand
+                                            ? AppStrings.viewLess
+                                            : AppStrings.viewMore,
+                                        style: provider
+                                            .notes[widget.index].desStyle,
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap =
+                                              () => provider.descriptionShow(
+                                                    provider.notes[widget.index]
+                                                        .id!,
+                                                  ),
                                       ),
-                                style: TextStyle(
-                                  color: AppColors.description,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text: provider.notes[widget.index].view
-                                        ? AppStrings.viewLess
-                                        : AppStrings.viewMore,
-                                    style: TextStyle(
-                                      color: AppColors.title,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = () => provider.descriptionShow(
-                                            provider.notes[widget.index].id!,
-                                          ),
-                                  ),
-                                ],
+                                  ];
+                                }(),
                               ),
                             ),
                           ],
@@ -165,9 +172,20 @@ class _MainNotesState extends State<MainNotes> {
                             ),
                             GestureDetector(
                               onLongPress: () {
-                                provider.getCurrentNoteId(widget.noteId!);
-                                provider.deleteSubNote(subNotes[index].id!);
-                                provider.loadSubNote(widget.noteId!);
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => ConfirmationDialog(
+                                    text:
+                                        'Are You sure you want to delete this sub note',
+                                    onTap: () {
+                                      provider.getCurrentNoteId(widget.noteId!);
+                                      provider
+                                          .deleteSubNote(subNotes[index].id!);
+                                      provider.loadSubNote(widget.noteId!);
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                );
                               },
                               child: Container(
                                 width: double.infinity,
@@ -182,41 +200,21 @@ class _MainNotesState extends State<MainNotes> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: TextWidget(
-                                              color: AppColors.title,
-                                              size: 20,
-                                              text: subNotes[index].title,
-                                              weight: FontWeight.bold,
-                                              line: 1,
-                                              overflow: TextOverflow.ellipsis,
+                                      CommonRawWidget(
+                                        text: subNotes[index].title,
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => NoteScreen(
+                                                subNote: subNotes[index],
+                                              ),
                                             ),
-                                          ),
-                                          GestureDetector(
-                                            onTap: () {
-                                              Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      NoteScreen(
-                                                    subNote: subNotes[index],
-                                                  ),
-                                                ),
-                                              );
-                                              provider.subSimple = true;
-                                              provider.list = false;
-                                              provider.subList = false;
-                                            },
-                                            child: Icon(
-                                              Icons.edit,
-                                              color: AppColors.title,
-                                              size: 18,
-                                            ),
-                                          ),
-                                        ],
+                                          );
+                                          provider.subSimple = true;
+                                          provider.list = false;
+                                          provider.subList = false;
+                                        },
+                                        style: subNotes[index].titleStyles,
                                       ),
                                       SizedBox(
                                         height: 6,
@@ -230,40 +228,39 @@ class _MainNotesState extends State<MainNotes> {
                                       ),
                                       RichText(
                                         text: TextSpan(
-                                          text: provider.subNotes[index].view
-                                              ? subNotes[index].description
-                                              : trimText(
-                                                  subNotes[index].description,
-                                                  TextStyle(
-                                                    color:
-                                                        AppColors.description,
-                                                    fontSize: 17,
-                                                    fontWeight: FontWeight.w400,
-                                                  ),
-                                                  context,
-                                                ),
-                                          style: TextStyle(
-                                            color: AppColors.description,
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                          children: [
-                                            TextSpan(
-                                              text:
-                                                  provider.subNotes[index].view
+                                          style: subNotes[index].desStyle,
+                                          children: () {
+                                            final result = trimText(
+                                                subNotes[index].description,
+                                                subNotes[index].desStyle,
+                                                context);
+                                            final expand =
+                                                provider.subNotes[index].view;
+                                            final text = expand
+                                                ? subNotes[index].description
+                                                : result['text'] as String;
+                                            final exist =
+                                                result['exist'] as bool;
+                                            return [
+                                              TextSpan(text: text),
+                                              if (exist)
+                                                TextSpan(
+                                                  text: expand
                                                       ? AppStrings.viewLess
                                                       : AppStrings.viewMore,
-                                              style: TextStyle(
-                                                color: AppColors.title,
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                              recognizer: TapGestureRecognizer()
-                                                ..onTap = () => provider
-                                                    .subDescriptionShow(provider
-                                                        .subNotes[index].id!),
-                                            ),
-                                          ],
+                                                  style:
+                                                      subNotes[index].desStyle,
+                                                  recognizer:
+                                                      TapGestureRecognizer()
+                                                        ..onTap = () => provider
+                                                            .subDescriptionShow(
+                                                                provider
+                                                                    .subNotes[
+                                                                        index]
+                                                                    .id!),
+                                                ),
+                                            ];
+                                          }(),
                                         ),
                                       ),
                                     ],

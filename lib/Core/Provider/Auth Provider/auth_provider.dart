@@ -4,13 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:note_tracking_app/Core/Database%20Service/Auth%20Database%20Service/auth_database_service.dart';
 import 'package:note_tracking_app/Core/Model/Auth%20Model/auth_model.dart';
+import 'package:note_tracking_app/Module/Login%20Screen/Screens/login_screen.dart';
+import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
 
 class AuthProvider extends ChangeNotifier {
-  // AuthModel? currentUser;
-
   final AuthDatabaseService authDatabaseService = AuthDatabaseService();
-
-  // AuthModel? get getCurrentUser => currentUser;
 
   Future<String> signUp(AuthModel user) async {
     if (user.email.isNotEmpty && user.password.isNotEmpty) {
@@ -25,7 +23,6 @@ class AuthProvider extends ChangeNotifier {
       String email, String password, BuildContext context) async {
     final user = await authDatabaseService.loginUser(email, password, context);
     if (user != null) {
-      // currentUser = user;
       notifyListeners();
       return true;
     }
@@ -36,23 +33,13 @@ class AuthProvider extends ChangeNotifier {
   bool conPasswordShow = false;
 
   void showPassword() {
-    if (passwordShow == true) {
-      passwordShow = false;
-      notifyListeners();
-    } else {
-      passwordShow = true;
-      notifyListeners();
-    }
+    passwordShow = !passwordShow;
+    notifyListeners();
   }
 
   void showConfirmPassword() {
-    if (conPasswordShow == true) {
-      conPasswordShow = false;
-      notifyListeners();
-    } else {
-      conPasswordShow = true;
-      notifyListeners();
-    }
+    conPasswordShow = !conPasswordShow;
+    notifyListeners();
   }
 
   bool validEmail(String value) {
@@ -65,6 +52,70 @@ class AuthProvider extends ChangeNotifier {
     return password.hasMatch(value);
   }
 
+  Future<void> validForSignUp(BuildContext context) async {
+    if (validEmail(email.text) &&
+        validPassword(password.text) &&
+        password.text == confirmPassword.text &&
+        name.text.isNotEmpty) {
+      final user = AuthModel(
+        name: name.text,
+        email: email.text,
+        password: password.text,
+        image: (image != null) ? image!.path : AppStrings.image,
+      );
+      final result = await signUp(user);
+
+      if (result == AppStrings.success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppStrings.signUpSuccess,
+            ),
+          ),
+        );
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => LoginScreen(),
+          ),
+        );
+        email.clear();
+        password.clear();
+        confirmPassword.clear();
+        name.clear();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              result,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> validForEditProfile(BuildContext context) async {
+    if (validEmail(email.text) && name.text.isNotEmpty) {
+      currentUserName = name.text;
+      final update = AuthModel(
+        id: currentUserId,
+        name: currentUserName,
+        email: email.text,
+        password: password.text,
+        image: (image != null) ? image!.path : AppStrings.image,
+      );
+      await updateUser(update);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppStrings.profileUpdate,
+          ),
+        ),
+      );
+      Navigator.pop(context);
+    }
+  }
+
   void errorMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -73,7 +124,7 @@ class AuthProvider extends ChangeNotifier {
     );
   }
 
-  int? currentUserId = 1;
+  int? currentUserId = 0;
   void getCurrentUserId(int id) {
     currentUserId = id;
     notifyListeners();

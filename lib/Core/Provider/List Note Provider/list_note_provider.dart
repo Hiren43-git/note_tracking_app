@@ -1,31 +1,35 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Database%20Service/List%20Note%20Database%20Service/list_note_database_service.dart';
 import 'package:note_tracking_app/Core/Database%20Service/List%20Note%20Database%20Service/sub_list_note_database_service.dart';
 import 'package:note_tracking_app/Core/Model/List%20Note%20Model/list_note_model.dart';
 import 'package:note_tracking_app/Core/Model/List%20Note%20Model/sub_list_model.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
+import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
+import 'package:provider/provider.dart';
 
 class ListNoteProvider extends ChangeNotifier {
   final ListNoteDatabaseService listNoteDatabaseService =
       ListNoteDatabaseService();
   final SubListNoteDatabaseService subListNoteDatabaseService =
       SubListNoteDatabaseService();
+
   List<ListNoteModel> listNotes = [];
-  List<ListNoteModel> searchNotes = [];
+  List searchNotes = [];
   List<SubListNoteModel> subListNotes = [];
 
   TextEditingController listTitle = TextEditingController();
   bool loading = false;
 
-  Future<void> search(String search) async {
+  Future<void> search(String search, BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
     if (search.isNotEmpty) {
-      final result = await listNoteDatabaseService.searchResult(search);
-      searchNotes = result
-          .map(
-            (e) => ListNoteModel.fromMap(e),
-          )
-          .toList();
+      final result = await listNoteDatabaseService.searchResult(
+          search, authProvider.currentUserId!);
+      searchNotes = result;
       notifyListeners();
     }
     notifyListeners();
@@ -54,7 +58,8 @@ class ListNoteProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> deleteNote(int id) async {
+  Future<void> deleteNote(int id, BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     listNotes.removeWhere((element) => element.id == id);
     await listNoteDatabaseService.deleteListNote(id);
     final mainSubListNotes = subListNotes
@@ -67,7 +72,7 @@ class ListNoteProvider extends ChangeNotifier {
       final newNote = mainSubListNotes.first;
 
       final note1 = ListNoteModel(
-        userId: AuthProvider().currentUserId!,
+        userId: authProvider.currentUserId!,
         title: newNote.title,
         id: id,
         points: newNote.points,
@@ -80,11 +85,13 @@ class ListNoteProvider extends ChangeNotifier {
       );
       await subListNoteDatabaseService.deleteSubListNote(newNote.id!);
       await listNoteDatabaseService.addListNote(note1);
-      loadNote(AuthProvider().currentUserId!);
+      loadNote(authProvider.currentUserId!);
       loadSubNote(currentNoteId);
       notifyListeners();
+    } else {
+      Navigator.of(context).pop();
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   TextStyle titleStyles = TextStyle(
@@ -296,5 +303,118 @@ class ListNoteProvider extends ChangeNotifier {
           (element) => element.listNoteId == listNoteId,
         )
         .toList();
+  }
+
+  Future<void> addNoteInListNoteOrSubListNote(BuildContext context,
+      SubListNoteModel? subListNote, ListNoteModel? listNote) async {
+    final provider = Provider.of<NoteProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (listTitle.text.isEmpty || notesPointController[0].text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Add note data !',
+          ),
+          backgroundColor: AppColors.button,
+        ),
+      );
+    } else {
+      if (provider.subList == true) {
+        provider.list = false;
+        if (subListNote != null) {
+          final update = SubListNoteModel(
+            id: subListNote.id,
+            listNoteId: currentNoteId,
+            title: listTitle.text,
+            points: notesPointController
+                .map(
+                  (e) => e.text,
+                )
+                .toList(),
+            titleStyle: ListNoteModel.styleToJson(titleStyles),
+            pointsStyle: ListNoteModel.styleToJson(pointStyle),
+          );
+          await updateSubNote(update);
+          clearStyle();
+          for (int i = 0; i < notesPointController.length; i++) {
+            notesPointController[i];
+            clearStyle();
+          }
+          await loadSubNote(currentNoteId);
+        } else {
+          addSubNotes(
+            SubListNoteModel(
+              listNoteId: currentNoteId,
+              title: listTitle.text,
+              points: notesPointController
+                  .map(
+                    (e) => e.text,
+                  )
+                  .toList(),
+              titleStyle: ListNoteModel.styleToJson(titleStyles),
+              pointsStyle: ListNoteModel.styleToJson(pointStyle),
+            ),
+          );
+          clearStyle();
+          for (int i = 0; i < notesPointController.length; i++) {
+            notesPointController[i];
+            clearStyle();
+          }
+          provider.subList = false;
+        }
+        listTitle.clear();
+        notesPointController.clear();
+        pointFocus.clear();
+        await loadNote(authProvider.currentUserId!);
+        Navigator.of(context).pop();
+      }
+      if (provider.list == true) {
+        if (listNote != null) {
+          final update = ListNoteModel(
+            id: listNote.id,
+            userId: listNote.userId,
+            title: listTitle.text,
+            points: notesPointController
+                .map(
+                  (e) => e.text,
+                )
+                .toList(),
+            titleStyle: ListNoteModel.styleToJson(titleStyles),
+            pointsStyle: ListNoteModel.styleToJson(pointStyle),
+          );
+          await updateNote(update);
+          clearStyle();
+          for (int i = 0; i < notesPointController.length; i++) {
+            notesPointController[i];
+            clearStyle();
+          }
+        } else {
+          addNotes(
+            ListNoteModel(
+              userId: authProvider.currentUserId!,
+              title: listTitle.text,
+              points: notesPointController
+                  .map(
+                    (e) => e.text,
+                  )
+                  .toList(),
+              titleStyle: ListNoteModel.styleToJson(titleStyles),
+              pointsStyle: ListNoteModel.styleToJson(pointStyle),
+            ),
+          );
+          clearStyle();
+          for (int i = 0; i < notesPointController.length; i++) {
+            notesPointController[i];
+            clearStyle();
+          }
+        }
+        await loadNote(authProvider.currentUserId!);
+        listTitle.clear();
+        notesPointController.clear();
+        pointFocus.clear();
+        Navigator.of(context).pop();
+      }
+    }
+    provider.list = true;
   }
 }

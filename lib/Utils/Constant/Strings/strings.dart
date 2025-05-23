@@ -8,13 +8,13 @@ class AppStrings {
   static String emailNotExist = 'Email address does not exist';
   static String enterEmail = 'Enter email';
   static String invalidEmail = 'Invalid Email address';
-  static String noteNotFound = 'Note not found';
+  static String noteNotFound = 'Notes not found';
   static String name = 'Name';
   static String enterName = 'Enter your name';
   static String description = 'Description';
   static String emptyNote = 'Simple note not available';
   static String emptyListNote = 'List note not available';
-  static String emailText = 'email@email.com';
+  static String emailText = 'email@gmail.com';
   static String passwordText = 'Enter Password';
   static String password = 'Password';
   static String passwordRequire =
@@ -33,7 +33,7 @@ class AppStrings {
   static String add = 'Add';
   static String profile = 'Profile';
   static String addNew = 'Add new..';
-  static String simpleNote = 'Simple note';
+  static String simpleNote = 'Simple Notes';
   static String list2 = 'List';
   static String save = 'Save';
   static String defaultTitle = 'New simple note';

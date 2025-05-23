@@ -5,20 +5,22 @@ import 'package:provider/provider.dart';
 
 class TextFieldWidget extends StatefulWidget {
   final String text;
-  final String hint;
+  final String? hint;
   final TextEditingController controller;
   final FormFieldValidator<String>? validator;
   final bool hide;
+  final bool? read;
   final bool conHide;
 
   const TextFieldWidget({
     super.key,
     required this.text,
-    required this.hint,
+    this.hint,
     required this.controller,
-    required this.validator,
+    this.validator,
     this.hide = false,
     this.conHide = false,
+    this.read = false,
   });
 
   @override
@@ -41,6 +43,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
           height: 6,
         ),
         TextFormField(
+          readOnly: (widget.read == true) ? true : false,
           obscureText: (widget.controller == authProvider.confirmPassword)
               ? (widget.conHide == true)
                   ? authProvider.conPasswordShow
@@ -55,30 +58,38 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
           decoration: InputDecoration(
             suffixIcon: (widget.controller == authProvider.confirmPassword)
                 ? widget.conHide
-                    ? IconButton(
-                        icon: Icon(
-                          authProvider.conPasswordShow
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                          size: 22,
-                        ),
-                        color: AppColors.title,
-                        onPressed: () {
-                          authProvider.showConfirmPassword();
+                    ? Consumer<AuthProvider>(
+                        builder: (context, provider, child) {
+                          return IconButton(
+                            icon: Icon(
+                              provider.conPasswordShow
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 22,
+                            ),
+                            color: AppColors.title,
+                            onPressed: () {
+                              provider.showConfirmPassword();
+                            },
+                          );
                         },
                       )
                     : null
                 : widget.hide
-                    ? IconButton(
-                        icon: Icon(
-                          authProvider.passwordShow
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                          size: 22,
-                        ),
-                        color: AppColors.title,
-                        onPressed: () {
-                          authProvider.showPassword();
+                    ? Consumer<AuthProvider>(
+                        builder: (context, value, child) {
+                          return IconButton(
+                            icon: Icon(
+                              authProvider.passwordShow
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 22,
+                            ),
+                            color: AppColors.title,
+                            onPressed: () {
+                              authProvider.showPassword();
+                            },
+                          );
                         },
                       )
                     : null,

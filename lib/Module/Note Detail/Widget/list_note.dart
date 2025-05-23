@@ -2,9 +2,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
+import 'package:note_tracking_app/Module/Note%20Detail/Widget/common_widget.dart';
+import 'package:note_tracking_app/Module/Note%20Detail/Widget/confirmation_dialog.dart';
 import 'package:note_tracking_app/Module/Note%20Detail/Widget/text_view_widget.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Screens/note_screen.dart';
-import 'package:note_tracking_app/Module/Welcome/Widget/text_widget.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
 import 'package:provider/provider.dart';
@@ -32,8 +33,24 @@ class _ListNotesState extends State<ListNotes> {
               final note = listProvider.listNotes.length > widget.index
                   ? listProvider.listNotes[widget.index]
                   : null;
+
+              if (provider.notes.length <= widget.index) {
+                WidgetsBinding.instance.addPostFrameCallback(
+                  (timeStamp) {
+                    if (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                );
+                return SizedBox();
+              }
               if (note == null) {
-                SizedBox();
+                WidgetsBinding.instance.addPostFrameCallback(
+                  (timeStamp) {
+                    Navigator.of(context).pop();
+                  },
+                );
+                return SizedBox();
               }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,12 +60,20 @@ class _ListNotesState extends State<ListNotes> {
                   ),
                   GestureDetector(
                     onLongPress: () {
-                      listProvider.getCurrentNoteId(widget.listNoteId!);
-                      listProvider
-                          .deleteNote(listProvider.listNotes[widget.index].id!);
-                      if (note == null) {
-                        Navigator.of(context).pop();
-                      }
+                      showDialog(
+                        context: context,
+                        builder: (context) => ConfirmationDialog(
+                          text:
+                              'Are You Sure you want to delete this list note',
+                          onTap: () {
+                            listProvider.getCurrentNoteId(widget.listNoteId!);
+                            listProvider.deleteNote(
+                                listProvider.listNotes[widget.index].id!,
+                                context);
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      );
                     },
                     child: Container(
                       width: double.infinity,
@@ -62,43 +87,25 @@ class _ListNotesState extends State<ListNotes> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: TextWidget(
-                                    color: AppColors.title,
-                                    size: 20,
-                                    text: listProvider
-                                        .listNotes[widget.index].title,
-                                    weight: FontWeight.bold,
-                                    line: 1,
-                                    overflow: TextOverflow.ellipsis,
+                            CommonRawWidget(
+                              text: listProvider.listNotes[widget.index].title,
+                              style: listProvider
+                                  .listNotes[widget.index].titleStyles,
+                              onTap: () {
+                                provider.list = false;
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => NoteScreen(
+                                      listNote:
+                                          listProvider.listNotes[widget.index],
+                                    ),
                                   ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    provider.list = false;
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (context) => NoteScreen(
-                                          listNote: listProvider
-                                              .listNotes[widget.index],
-                                        ),
-                                      ),
-                                    );
-                                    provider.list = true;
-                                    provider.simple = false;
-                                    listProvider.listTitle.clear();
-                                    listProvider.notesPointController.clear();
-                                  },
-                                  child: Icon(
-                                    Icons.edit,
-                                    color: AppColors.title,
-                                    size: 18,
-                                  ),
-                                ),
-                              ],
+                                );
+                                provider.list = true;
+                                provider.simple = false;
+                                listProvider.listTitle.clear();
+                                listProvider.notesPointController.clear();
+                              },
                             ),
                             SizedBox(
                               height: 6,
@@ -112,82 +119,79 @@ class _ListNotesState extends State<ListNotes> {
                             ),
                             RichText(
                               text: TextSpan(
-                                text: listProvider.listNotes[widget.index].view
-                                    ? listProvider
-                                        .listNotes[widget.index].points
-                                        .asMap()
-                                        .entries
-                                        .where(
-                                          (element) =>
-                                              !(element.key ==
-                                                      listProvider
-                                                              .listNotes[
-                                                                  widget.index]
-                                                              .points
-                                                              .length -
-                                                          1 &&
-                                                  element.value.isEmpty) &&
-                                              element.value.trim().isNotEmpty,
-                                        )
-                                        .map(
-                                          (e) => '○ ${e.value}',
-                                        )
-                                        .join('\n')
-                                    : trimText(
-                                        listProvider
-                                            .listNotes[widget.index].points
-                                            .asMap()
-                                            .entries
-                                            .where(
-                                              (element) =>
-                                                  !(element.key ==
-                                                          listProvider
-                                                                  .listNotes[
-                                                                      widget
-                                                                          .index]
-                                                                  .points
-                                                                  .length -
-                                                              1 &&
-                                                      element.value.isEmpty) &&
-                                                  element.value
-                                                      .trim()
-                                                      .isNotEmpty,
-                                            )
-                                            .map(
-                                              (e) => '○ ${e.value}',
-                                            )
-                                            .join('\n'),
-                                        TextStyle(
-                                          color: AppColors.description,
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                        context,
+                                style: listProvider
+                                    .listNotes[widget.index].pointStyle,
+                                children: () {
+                                  final result = trimText(
+                                      listProvider
+                                          .listNotes[widget.index].points
+                                          .asMap()
+                                          .entries
+                                          .where(
+                                            (element) =>
+                                                !(element.key ==
+                                                        listProvider
+                                                                .listNotes[
+                                                                    widget
+                                                                        .index]
+                                                                .points
+                                                                .length -
+                                                            1 &&
+                                                    element.value.isEmpty) &&
+                                                element.value.trim().isNotEmpty,
+                                          )
+                                          .map(
+                                            (e) => '○ ${e.value}',
+                                          )
+                                          .join('\n'),
+                                      listProvider
+                                          .listNotes[widget.index].pointStyle,
+                                      context);
+                                  final expand =
+                                      listProvider.listNotes[widget.index].view;
+                                  final text = expand
+                                      ? listProvider
+                                          .listNotes[widget.index].points
+                                          .asMap()
+                                          .entries
+                                          .where(
+                                            (element) =>
+                                                !(element.key ==
+                                                        listProvider
+                                                                .listNotes[
+                                                                    widget
+                                                                        .index]
+                                                                .points
+                                                                .length -
+                                                            1 &&
+                                                    element.value.isEmpty) &&
+                                                element.value.trim().isNotEmpty,
+                                          )
+                                          .map(
+                                            (e) => '○ ${e.value}',
+                                          )
+                                          .join('\n')
+                                      : result['text'] as String;
+                                  final exist = result['exist'] as bool;
+                                  return [
+                                    TextSpan(text: text),
+                                    if (exist)
+                                      TextSpan(
+                                        text: expand
+                                            ? AppStrings.viewLess
+                                            : AppStrings.viewMore,
+                                        style: listProvider
+                                            .listNotes[widget.index].pointStyle,
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () =>
+                                              listProvider.listDescriptionShow(
+                                                listProvider
+                                                    .listNotes[widget.index]
+                                                    .id!,
+                                              ),
                                       ),
-                                style: TextStyle(
-                                  color: AppColors.description,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text: listProvider
-                                            .listNotes[widget.index].view
-                                        ? AppStrings.viewLess
-                                        : AppStrings.viewMore,
-                                    style: TextStyle(
-                                      color: AppColors.title,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    recognizer: TapGestureRecognizer()
-                                      ..onTap = () =>
-                                          listProvider.listDescriptionShow(
-                                            listProvider
-                                                .listNotes[widget.index].id!,
-                                          ),
-                                  ),
-                                ],
+                                  ];
+                                }(),
                               ),
                             ),
                           ],
@@ -221,11 +225,22 @@ class _ListNotesState extends State<ListNotes> {
                             ),
                             GestureDetector(
                               onLongPress: () {
-                                listProvider
-                                    .getCurrentNoteId(widget.listNoteId!);
-                                listProvider
-                                    .deleteSubNote(subListNotes[index].id!);
-                                listProvider.loadSubNote(widget.listNoteId!);
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => ConfirmationDialog(
+                                    text:
+                                        'Are you sure you want to delete this sub list note',
+                                    onTap: () {
+                                      listProvider
+                                          .getCurrentNoteId(widget.listNoteId!);
+                                      listProvider.deleteSubNote(
+                                          subListNotes[index].id!);
+                                      listProvider
+                                          .loadSubNote(widget.listNoteId!);
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                );
                               },
                               child: Container(
                                 width: double.infinity,
@@ -240,42 +255,22 @@ class _ListNotesState extends State<ListNotes> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: TextWidget(
-                                              color: AppColors.title,
-                                              size: 20,
-                                              text: subListNotes[index].title,
-                                              weight: FontWeight.bold,
-                                              line: 1,
-                                              overflow: TextOverflow.ellipsis,
+                                      CommonRawWidget(
+                                        text: subListNotes[index].title,
+                                        style: subListNotes[index].titleStyles,
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => NoteScreen(
+                                                subListNote:
+                                                    subListNotes[index],
+                                              ),
                                             ),
-                                          ),
-                                          GestureDetector(
-                                            onTap: () {
-                                              Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      NoteScreen(
-                                                    subListNote:
-                                                        subListNotes[index],
-                                                  ),
-                                                ),
-                                              );
-                                              provider.subSimple = false;
-                                              provider.simple = false;
-                                              provider.subList = true;
-                                            },
-                                            child: Icon(
-                                              Icons.edit,
-                                              color: AppColors.title,
-                                              size: 18,
-                                            ),
-                                          ),
-                                        ],
+                                          );
+                                          provider.subSimple = false;
+                                          provider.simple = false;
+                                          provider.subList = true;
+                                        },
                                       ),
                                       SizedBox(
                                         height: 6,
@@ -289,89 +284,85 @@ class _ListNotesState extends State<ListNotes> {
                                       ),
                                       RichText(
                                         text: TextSpan(
-                                          text:
-                                              listProvider
-                                                      .subListNotes[index].view
-                                                  ? listProvider
+                                          style: listProvider
+                                              .subListNotes[index].pointStyle,
+                                          children: () {
+                                            final result = trimText(
+                                                listProvider
+                                                    .subListNotes[index].points
+                                                    .asMap()
+                                                    .entries
+                                                    .where(
+                                                      (element) =>
+                                                          !(element.key ==
+                                                                  listProvider
+                                                                          .subListNotes[
+                                                                              index]
+                                                                          .points
+                                                                          .length -
+                                                                      1 &&
+                                                              element.value
+                                                                  .isEmpty) &&
+                                                          element.value
+                                                              .trim()
+                                                              .isNotEmpty,
+                                                    )
+                                                    .map(
+                                                      (e) => '○ ${e.value}',
+                                                    )
+                                                    .join('\n'),
+                                                listProvider.subListNotes[index]
+                                                    .pointStyle,
+                                                context);
+                                            final expand = listProvider
+                                                .subListNotes[index].view;
+                                            final text = expand
+                                                ? listProvider
+                                                    .subListNotes[index].points
+                                                    .asMap()
+                                                    .entries
+                                                    .where(
+                                                      (element) =>
+                                                          !(element.key ==
+                                                                  listProvider
+                                                                          .subListNotes[
+                                                                              index]
+                                                                          .points
+                                                                          .length -
+                                                                      1 &&
+                                                              element.value
+                                                                  .isEmpty) &&
+                                                          element.value
+                                                              .trim()
+                                                              .isNotEmpty,
+                                                    )
+                                                    .map(
+                                                      (e) => '○ ${e.value}',
+                                                    )
+                                                    .join('\n')
+                                                : result['text'] as String;
+                                            final exist =
+                                                result['exist'] as bool;
+                                            return [
+                                              TextSpan(text: text),
+                                              if (exist)
+                                                TextSpan(
+                                                  text: expand
+                                                      ? AppStrings.viewLess
+                                                      : AppStrings.viewMore,
+                                                  style: listProvider
                                                       .subListNotes[index]
-                                                      .points
-                                                      .asMap()
-                                                      .entries
-                                                      .where(
-                                                        (element) =>
-                                                            !(element.key ==
-                                                                    listProvider
-                                                                            .subListNotes[
-                                                                                index]
-                                                                            .points
-                                                                            .length -
-                                                                        1 &&
-                                                                element.value
-                                                                    .isEmpty) &&
-                                                            element.value
-                                                                .trim()
-                                                                .isNotEmpty,
-                                                      )
-                                                      .map(
-                                                        (e) => '○ ${e.value}',
-                                                      )
-                                                      .join('\n')
-                                                  : trimText(
-                                                      listProvider
-                                                          .subListNotes[index]
-                                                          .points
-                                                          .asMap()
-                                                          .entries
-                                                          .where(
-                                                            (element) =>
-                                                                !(element.key ==
-                                                                        listProvider.subListNotes[index].points.length -
-                                                                            1 &&
-                                                                    element
-                                                                        .value
-                                                                        .isEmpty) &&
-                                                                element.value
-                                                                    .trim()
-                                                                    .isNotEmpty,
-                                                          )
-                                                          .map(
-                                                            (e) =>
-                                                                '○ ${e.value}',
-                                                          )
-                                                          .join('\n'),
-                                                      TextStyle(
-                                                        color: AppColors
-                                                            .description,
-                                                        fontSize: 17,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                      ),
-                                                      context,
-                                                    ),
-                                          style: TextStyle(
-                                            color: AppColors.description,
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                          children: [
-                                            TextSpan(
-                                              text: listProvider
-                                                      .subListNotes[index].view
-                                                  ? AppStrings.viewLess
-                                                  : AppStrings.viewMore,
-                                              style: TextStyle(
-                                                color: AppColors.title,
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                              recognizer: TapGestureRecognizer()
-                                                ..onTap = () => listProvider
-                                                    .subListDescriptionShow(
-                                                        listProvider
-                                                            .subListNotes[index]
-                                                            .id!),
-                                            ),
-                                          ],
+                                                      .pointStyle,
+                                                  recognizer: TapGestureRecognizer()
+                                                    ..onTap = () => listProvider
+                                                        .subListDescriptionShow(
+                                                            listProvider
+                                                                .subListNotes[
+                                                                    index]
+                                                                .id!),
+                                                ),
+                                            ];
+                                          }(),
                                         ),
                                       ),
                                     ],

@@ -42,37 +42,54 @@ class NoteDatabaseService {
     );
   }
 
-  Future<List<Map<String, dynamic>>> searchResult(String search) async {
+  Future<List<Map<String, dynamic>>> searchResult(
+      String search, int currentUserId) async {
     final dbClient = await dbHelper.database;
-
-    final matchSubNote = await dbClient!.query(
-      'subNotes',
-      where: 'title LIKE ?',
-      whereArgs: ['%$search%'],
-    );
-    final subNotesId = matchSubNote
-        .map(
-          (e) => e['noteId'],
-        )
-        .toSet();
-
-    final matchNote = await dbClient.query(
+    final userNotes = await dbClient!.query(
       'notes',
-      where: 'title LIKE ?',
-      whereArgs: ['%$search%'],
+      where: 'userId = ?',
+      whereArgs: [currentUserId],
     );
-
-    final noteId = matchNote
+    final userNoteIds = userNotes
         .map(
           (e) => e['id'],
         )
         .toSet();
-    final allNotes = {...subNotesId, ...noteId}.toList();
-    if (allNotes.isEmpty) return [];
-    final result = await dbClient.query(
-      'notes',
-      where: 'id IN (${allNotes.join(',')})',
+    final matchSubNote = await dbClient.query(
+      'subNotes',
+      where: 'title LIKE ?',
+      whereArgs: ['%$search%'],
     );
-    return result;
+    final filterSubNotes = matchSubNote.where(
+      (element) => userNoteIds.contains(element['noteId']),
+    );
+    final matchNote = await dbClient.query(
+      'notes',
+      where: 'title LIKE ? AND userId = ?',
+      whereArgs: ['%$search%', currentUserId],
+    );
+    final noteResult = matchNote
+        .map(
+          (note) => {
+            'note': 'note',
+            'noteId': note['id'],
+            'title': note['title'],
+            'description': note['description']
+          },
+        )
+        .toList();
+    final subNoteResult = filterSubNotes
+        .map(
+          (sub) => {
+            'note': 'subNote',
+            'noteId': sub['noteId'],
+            'title': sub['title'],
+            'description': sub['description']
+          },
+        )
+        .toList();
+    final allNotes = [...noteResult, ...subNoteResult];
+    if (allNotes.isEmpty) return [];
+    return allNotes;
   }
 }
