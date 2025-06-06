@@ -41,6 +41,7 @@ class _NoteWidgetState extends State<NoteWidget> {
           child: Consumer<ListNoteProvider>(
               builder: (context, listProvider, child) {
             return TextField(
+              autocorrect: false,
               focusNode: listProvider.pointFocus[widget.index],
               controller: listProvider.notesPointController[widget.index],
               style: (listProvider
@@ -48,16 +49,21 @@ class _NoteWidgetState extends State<NoteWidget> {
                   ? listProvider.pointStyle
                   : null,
               onSubmitted: (value) {
-                if (value.isNotEmpty &&
-                    widget.index ==
-                        listProvider.notesPointController.length - 1) {
-                  listProvider.addPoint(widget.index);
+                if (value.isNotEmpty) {
+                  listProvider.addPoint(widget.index, context);
                 } else {
-                  listProvider.removePoint(widget.index);
+                  if (widget.index > 0) {
+                    listProvider.removePoint(widget.index);
+                  } else {
+                    listProvider.addFirstPoint();
+                    FocusScope.of(context).requestFocus(
+                      listProvider.pointFocus[0],
+                    );
+                  }
                 }
               },
               onChanged: (value) {
-                setState(() {});
+                listProvider.temp();
               },
               cursorColor: AppColors.text,
               decoration: InputDecoration(

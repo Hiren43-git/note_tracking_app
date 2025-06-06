@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 
+import '../../../Utils/Constant/Strings/strings.dart';
+
 class DividerWidget extends StatefulWidget {
   const DividerWidget({super.key});
 
@@ -22,7 +24,7 @@ class _DividerWidgetState extends State<DividerWidget> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8),
           child: Text(
-            'OR',
+            AppStrings.or,
             style: TextStyle(
               color: AppColors.detailCardDivider,
               fontSize: 12,

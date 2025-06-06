@@ -3,6 +3,8 @@ class AppStrings {
   static String notetaking = 'Note taking made easier';
   static String image = 'assets/Images/manager.png';
   static String saveImage = 'assets/Images/Icons/check.png';
+  static String addIcon = 'assets/Images/Icons/add.png';
+  static String closeIcon = 'assets/Images/Icons/close.png';
   static String editProfile = 'Edit profile';
   static String email = 'Email address';
   static String emailNotExist = 'Email address does not exist';
@@ -12,6 +14,7 @@ class AppStrings {
   static String name = 'Name';
   static String enterName = 'Enter your name';
   static String description = 'Description';
+  static String description2 = 'description';
   static String emptyNote = 'Simple note not available';
   static String emptyListNote = 'List note not available';
   static String emailText = 'email@gmail.com';
@@ -31,6 +34,7 @@ class AppStrings {
   static String listNote = 'List Notes';
   static String home = 'Home';
   static String add = 'Add';
+  static String addNoteData = 'Add note data !';
   static String profile = 'Profile';
   static String addNew = 'Add new..';
   static String simpleNote = 'Simple Notes';
@@ -47,12 +51,29 @@ class AppStrings {
   static String h3 = 'H3';
   static String a = 'A';
   static String success = 'success';
-  static String viewMore = ' View more';
-  static String viewLess = ' View less';
+  static String cancel = 'cancel';
+  static String cancel2 = 'CANCEL';
+  static String delete = 'DELETE';
+  static String viewMore = ' ...View more';
+  static String viewMore2 = 'View more';
+  static String viewLess = ' ...View less';
   static String login = 'Login';
   static String signUp = 'Sign up';
   static String signUpSuccess = 'Signup Successfully !';
+  static String logOutSuccess = 'Logout Successfully !';
   static String loginSuccess = 'Login Successfully !';
   static String logout = 'Logout';
+  static String text = 'text';
+  static String exist = 'exist';
+  static String or = 'OR';
+  static String title = 'title';
+  static String point = 'point';
   static String profileUpdate = 'Profile Edited Successfully !';
+  static String confirmLogout = 'Are You Sure you want to logout';
+  static String confirmNote = 'Are You sure you want to delete this note';
+  static String confirmSubNote =
+      'Are You sure you want to delete this sub note';
+  static String confirmList = 'Are You Sure you want to delete this list note';
+  static String confirmSubList =
+      'Are you sure you want to delete this sub list note';
 }

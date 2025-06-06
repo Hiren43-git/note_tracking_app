@@ -8,9 +8,12 @@ class TextFieldWidget extends StatefulWidget {
   final String? hint;
   final TextEditingController controller;
   final FormFieldValidator<String>? validator;
+  final ValueChanged? onSubmitted;
+  final ValueChanged? onChange;
   final bool hide;
   final bool? read;
   final bool conHide;
+  final FocusNode? focus;
 
   const TextFieldWidget({
     super.key,
@@ -21,6 +24,9 @@ class TextFieldWidget extends StatefulWidget {
     this.hide = false,
     this.conHide = false,
     this.read = false,
+    this.focus,
+    this.onSubmitted,
+    this.onChange,
   });
 
   @override
@@ -43,6 +49,8 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
           height: 6,
         ),
         TextFormField(
+          autocorrect: false,
+          focusNode: widget.focus,
           readOnly: (widget.read == true) ? true : false,
           obscureText: (widget.controller == authProvider.confirmPassword)
               ? (widget.conHide == true)
@@ -54,42 +62,36 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
           validator: widget.validator,
           controller: widget.controller,
           cursorColor: AppColors.title,
+          onFieldSubmitted: widget.onSubmitted,
+          onChanged: widget.onChange,
           style: TextStyle(color: AppColors.title),
           decoration: InputDecoration(
             suffixIcon: (widget.controller == authProvider.confirmPassword)
                 ? widget.conHide
-                    ? Consumer<AuthProvider>(
-                        builder: (context, provider, child) {
-                          return IconButton(
-                            icon: Icon(
-                              provider.conPasswordShow
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              size: 22,
-                            ),
-                            color: AppColors.title,
-                            onPressed: () {
-                              provider.showConfirmPassword();
-                            },
-                          );
+                    ? IconButton(
+                        icon: Icon(
+                          authProvider.conPasswordShow
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          size: 22,
+                        ),
+                        color: AppColors.title,
+                        onPressed: () {
+                          authProvider.showConfirmPassword();
                         },
                       )
                     : null
                 : widget.hide
-                    ? Consumer<AuthProvider>(
-                        builder: (context, value, child) {
-                          return IconButton(
-                            icon: Icon(
-                              authProvider.passwordShow
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              size: 22,
-                            ),
-                            color: AppColors.title,
-                            onPressed: () {
-                              authProvider.showPassword();
-                            },
-                          );
+                    ? IconButton(
+                        icon: Icon(
+                          authProvider.passwordShow
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          size: 22,
+                        ),
+                        color: AppColors.title,
+                        onPressed: () {
+                          authProvider.showPassword();
                         },
                       )
                     : null,

@@ -1,5 +1,8 @@
+// ignore_for_file: non_constant_identifier_names
+
 class AuthModel {
   int? id;
+  int? is_logged;
   final String name;
   final String email;
   final String password;
@@ -11,6 +14,7 @@ class AuthModel {
     required this.email,
     required this.password,
     required this.image,
+    this.is_logged = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -20,6 +24,7 @@ class AuthModel {
       'email': email,
       'password': password,
       'image': image,
+      'is_logged': is_logged,
     };
   }
 
@@ -30,6 +35,7 @@ class AuthModel {
       email: m1['email'],
       password: m1['password'],
       image: m1['image'],
+      is_logged: m1['is_logged'] ?? 0,
     );
   }
 }

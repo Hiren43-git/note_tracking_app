@@ -3,12 +3,13 @@ import 'package:note_tracking_app/Core/Model/List%20Note%20Model/list_note_model
 import 'package:note_tracking_app/Core/Model/List%20Note%20Model/sub_list_model.dart';
 import 'package:note_tracking_app/Core/Model/Note%20Model/note_model.dart';
 import 'package:note_tracking_app/Core/Model/Note%20Model/sub_note_model.dart';
+import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Widget/bottom_navigation_bar.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Widget/note.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Widget/save_button.dart';
-import 'package:note_tracking_app/Module/Simple%20Note/Widget/textField_widget.dart';
+import 'package:note_tracking_app/Module/Simple%20Note/Widget/textfield_widget.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
 
@@ -28,7 +29,7 @@ class NoteScreen extends StatefulWidget {
 
 class _NoteScreenState extends State<NoteScreen> {
   late ListNoteProvider listProvider;
-  late VoidCallback titleListener;  
+  late VoidCallback titleListener;
   final Map pointListener = {};
   bool initialized = false;
 
@@ -37,97 +38,119 @@ class _NoteScreenState extends State<NoteScreen> {
     super.initState();
     final provider = Provider.of<NoteProvider>(context, listen: false);
     final listProvider = Provider.of<ListNoteProvider>(context, listen: false);
-    if (widget.subNote != null) {
-      provider.title.text = widget.subNote!.title;
-      provider.description.text = widget.subNote!.description;
-      provider.titleStyles =
-          SubNoteModel.decodeStyle(widget.subNote!.titleStyle);
-      provider.desStyle =
-          SubNoteModel.decodeStyle(widget.subNote!.descriptionStyle);
-    }
-    if (widget.note != null) {
-      provider.title.text = widget.note!.title;
-      provider.description.text = widget.note!.description;
-      provider.titleStyles = NoteModel.decodeStyle(widget.note!.titleStyle);
-      provider.desStyle = NoteModel.decodeStyle(widget.note!.descriptionStyle);
-    }
-    if (widget.listNote != null) {
-      listProvider.listTitle.text = widget.listNote!.title;
-      listProvider.titleStyles =
-          ListNoteModel.decodeStyle(widget.listNote!.titleStyle);
-      while (listProvider.notesPointController.length <
-          widget.listNote!.points.length) {
-        if (widget.listNote!.points.isNotEmpty) {
-          listProvider.notesPointController.add(TextEditingController());
-          listProvider.pointFocus.add(FocusNode());
-        } else {
-          widget.listNote!.points.length = widget.listNote!.points.length - 1;
+    if (Provider.of<AuthProvider>(context, listen: false).currentUserId !=
+        null) {
+      if (widget.subNote != null) {
+        provider.title.text = widget.subNote!.title;
+        provider.description.text = widget.subNote!.description;
+        provider.titleStyles =
+            SubNoteModel.decodeStyle(widget.subNote!.titleStyle);
+        provider.desStyle =
+            SubNoteModel.decodeStyle(widget.subNote!.descriptionStyle);
+      }
+      if (widget.note != null) {
+        provider.title.text = widget.note!.title;
+        provider.description.text = widget.note!.description;
+        provider.titleStyles = NoteModel.decodeStyle(widget.note!.titleStyle);
+        provider.desStyle =
+            NoteModel.decodeStyle(widget.note!.descriptionStyle);
+      }
+      if (widget.listNote != null) {
+        listProvider.listTitle.text = widget.listNote!.title;
+        listProvider.titleStyles =
+            ListNoteModel.decodeStyle(widget.listNote!.titleStyle);
+        while (listProvider.notesPointController.length <
+            widget.listNote!.points.length) {
+          if (widget.listNote!.points.isNotEmpty) {
+            listProvider.notesPointController.add(TextEditingController());
+            listProvider.pointFocus.add(FocusNode());
+          } else {
+            widget.listNote!.points.length = widget.listNote!.points.length - 1;
+          }
+        }
+
+        for (int i = 0; i < widget.listNote!.points.length; i++) {
+          if (widget.listNote!.points[i].isEmpty) {
+            widget.listNote!.points.removeAt(i);
+            Provider.of<ListNoteProvider>(context, listen: false)
+                .notesPointController
+                .removeAt(i);
+            Provider.of<ListNoteProvider>(context, listen: false)
+                .pointFocus
+                .removeAt(i);
+            Provider.of<ListNoteProvider>(context, listen: false)
+                    .notesPointController[i] =
+                Provider.of<ListNoteProvider>(context, listen: false)
+                    .notesPointController[i + 1];
+            Provider.of<ListNoteProvider>(context, listen: false)
+                    .pointFocus[i] =
+                Provider.of<ListNoteProvider>(context, listen: false)
+                    .pointFocus[i + 1];
+            widget.listNote!.points[i] = widget.listNote!.points[i + 1];
+          } else {
+            Provider.of<ListNoteProvider>(context, listen: false)
+                .notesPointController[i]
+                .text = widget.listNote!.points[i];
+            Provider.of<ListNoteProvider>(context, listen: false).pointStyle =
+                ListNoteModel.decodeStyle(widget.listNote!.pointsStyle);
+          }
+        }
+      }
+      if (widget.subListNote != null) {
+        Provider.of<ListNoteProvider>(context, listen: false).listTitle.text =
+            widget.subListNote!.title;
+        Provider.of<ListNoteProvider>(context, listen: false).titleStyles =
+            SubListNoteModel.decodeStyle(widget.subListNote!.titleStyle);
+
+        while (Provider.of<ListNoteProvider>(context, listen: false)
+                .notesPointController
+                .length <
+            widget.subListNote!.points.length) {
+          if (widget.subListNote!.points.isNotEmpty) {
+            Provider.of<ListNoteProvider>(context, listen: false)
+                .notesPointController
+                .add(TextEditingController());
+            Provider.of<ListNoteProvider>(context, listen: false)
+                .pointFocus
+                .add(FocusNode());
+          } else {
+            widget.subListNote!.points.length =
+                widget.subListNote!.points.length - 1;
+          }
+        }
+
+        for (int i = 0; i < widget.subListNote!.points.length; i++) {
+          if (widget.subListNote!.points[i].isEmpty) {
+            widget.subListNote!.points.removeAt(i);
+            Provider.of<ListNoteProvider>(context, listen: false)
+                .notesPointController
+                .removeAt(i);
+            Provider.of<ListNoteProvider>(context, listen: false)
+                .pointFocus
+                .removeAt(i);
+            Provider.of<ListNoteProvider>(context, listen: false)
+                    .notesPointController[i] =
+                Provider.of<ListNoteProvider>(context, listen: false)
+                    .notesPointController[i + 1];
+            Provider.of<ListNoteProvider>(context, listen: false)
+                    .pointFocus[i] =
+                Provider.of<ListNoteProvider>(context, listen: false)
+                    .pointFocus[i + 1];
+            widget.listNote!.points[i] = widget.listNote!.points[i + 1];
+          } else {
+            Provider.of<ListNoteProvider>(context, listen: false)
+                .notesPointController[i]
+                .text = widget.subListNote!.points[i];
+            Provider.of<ListNoteProvider>(context, listen: false).pointStyle =
+                SubListNoteModel.decodeStyle(widget.subListNote!.pointsStyle);
+          }
         }
       }
 
-      for (int i = 0; i < widget.listNote!.points.length; i++) {
-        if (widget.listNote!.points[i].isEmpty) {
-          widget.listNote!.points.removeAt(i);
-          Provider.of<ListNoteProvider>(context, listen: false)
-              .notesPointController
-              .removeAt(i);
-          Provider.of<ListNoteProvider>(context, listen: false)
-              .pointFocus
-              .removeAt(i);
-        } else {
-          Provider.of<ListNoteProvider>(context, listen: false)
-              .notesPointController[i]
-              .text = widget.listNote!.points[i];
-          Provider.of<ListNoteProvider>(context, listen: false).pointStyle =
-              ListNoteModel.decodeStyle(widget.listNote!.pointsStyle);
-        }
+      if (listProvider.notesPointController.isEmpty) {
+        listProvider.notesPointController.add(TextEditingController());
+        listProvider.pointFocus.add(FocusNode());
       }
-    }
-    if (widget.subListNote != null) {
-      Provider.of<ListNoteProvider>(context, listen: false).listTitle.text =
-          widget.subListNote!.title;
-      Provider.of<ListNoteProvider>(context, listen: false).titleStyles =
-          SubListNoteModel.decodeStyle(widget.subListNote!.titleStyle);
-
-      while (Provider.of<ListNoteProvider>(context, listen: false)
-              .notesPointController
-              .length <
-          widget.subListNote!.points.length) {
-        if (widget.subListNote!.points.isNotEmpty) {
-          Provider.of<ListNoteProvider>(context, listen: false)
-              .notesPointController
-              .add(TextEditingController());
-          Provider.of<ListNoteProvider>(context, listen: false)
-              .pointFocus
-              .add(FocusNode());
-        } else {
-          widget.subListNote!.points.length =
-              widget.subListNote!.points.length - 1;
-        }
-      }
-
-      for (int i = 0; i < widget.subListNote!.points.length; i++) {
-        if (widget.subListNote!.points[i].isEmpty) {
-          widget.subListNote!.points.removeAt(i);
-          Provider.of<ListNoteProvider>(context, listen: false)
-              .notesPointController
-              .removeAt(i);
-          Provider.of<ListNoteProvider>(context, listen: false)
-              .pointFocus
-              .removeAt(i);
-        } else {
-          Provider.of<ListNoteProvider>(context, listen: false)
-              .notesPointController[i]
-              .text = widget.subListNote!.points[i];
-          Provider.of<ListNoteProvider>(context, listen: false).pointStyle =
-              SubListNoteModel.decodeStyle(widget.subListNote!.pointsStyle);
-        }
-      }
-    }
-
-    if (listProvider.notesPointController.isEmpty) {
-      listProvider.notesPointController.add(TextEditingController());
-      listProvider.pointFocus.add(FocusNode());
     }
   }
 
@@ -137,20 +160,22 @@ class _NoteScreenState extends State<NoteScreen> {
     listProvider = Provider.of<ListNoteProvider>(context, listen: false);
 
     if (!initialized) {
-      titleListener = () {
-        if (!mounted) return;
-        if (mounted && listProvider.titleFocus.hasFocus) {
-          setState(() {
-            listProvider.field = 'title';
-          });
-        } else {
-          setState(() {
-            listProvider.field = 'point';
-          });
-        }
-      };
+     //  titleListener = () {
+      //   if (!mounted) return;
+      //   if (mounted && listProvider.titleFocus.hasFocus) {
+      //     print('1 title');
+      //     listProvider.tempField(AppStrings.title);
+      //   } else {
+      //     print('1 point');
+      //     listProvider.tempField(AppStrings.point);
+      //     // for (var node in listProvider.pointFocus) {
+      //     //   if (node.hasFocus) {}
+      //     //   // addPointListener(node);
+      //     // }
+      //   }
+      // };
 
-      listProvider.addListener(titleListener);
+      // listProvider.addListener(titleListener);
       for (var node in listProvider.pointFocus) {
         addPointListener(node);
       }
@@ -162,13 +187,11 @@ class _NoteScreenState extends State<NoteScreen> {
     listener() {
       if (!mounted) return;
       if (mounted && node.hasFocus) {
-        setState(() {
-          listProvider.field = 'point';
-        });
+        listProvider.tempField(AppStrings.point);
       } else {
-        setState(() {
-          listProvider.field = 'title';
-        });
+        if (listProvider.titleFocus.hasFocus) {
+          listProvider.tempField(AppStrings.title);
+        }
       }
     }
 
@@ -215,7 +238,7 @@ class _NoteScreenState extends State<NoteScreen> {
             },
             child: Image.asset(
               fit: BoxFit.contain,
-              'assets/Images/Icons/close.png',
+              AppStrings.closeIcon,
             ),
           ),
         ),
@@ -250,29 +273,38 @@ class _NoteScreenState extends State<NoteScreen> {
                 height: 34,
               ),
               if (provider.simple == true || provider.subSimple == true)
-                textField(
-                  provider,
-                  provider.title,
-                  AppStrings.defaultTitle,
-                  1,
-                  provider.titleFocus,
-                  provider.titleStyles,
+                TextFieldWidget(
+                  controller: provider.title,
+                  hintText: AppStrings.defaultTitle,
+                  line: 1,
+                  focusNode: provider.titleFocus,
+                  style: provider.titleStyles,
+                  onSubmit: (value) {
+                    FocusScope.of(context).requestFocus(
+                      provider.descriptionFocus,
+                    );
+                  },
                 ),
               if (provider.simple == true || provider.subSimple == true)
-                textField(
-                  provider,
-                  provider.description,
-                  AppStrings.description,
-                  null,
-                  provider.descriptionFocus,
-                  provider.desStyle,
+                TextFieldWidget(
+                  controller: provider.description,
+                  hintText: AppStrings.description,
+                  line: null,
+                  focusNode: provider.descriptionFocus,
+                  style: provider.desStyle,
                 ),
               if (provider.list == true || provider.subList == true) ...[
-                listTextField(
-                  provider,
-                  listProvider,
-                  listProvider.listTitle,
-                  AppStrings.defaultListTitle,
+                TextFieldWidget(
+                  controller: listProvider.listTitle,
+                  hintText: AppStrings.defaultListTitle,
+                  focusNode: listProvider.titleFocus,
+                  style: listProvider.titleStyles,
+                  line: 1,
+                  onSubmit: (value) {
+                    FocusScope.of(context).requestFocus(
+                      listProvider.pointFocus[0],
+                    );
+                  },
                 ),
                 SizedBox(
                   height: 8,

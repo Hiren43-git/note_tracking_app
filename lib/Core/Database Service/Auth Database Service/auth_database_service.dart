@@ -3,7 +3,6 @@ import 'package:note_tracking_app/Core/Database%20Service/database_service.dart'
 import 'package:note_tracking_app/Core/Model/Auth%20Model/auth_model.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:provider/provider.dart';
-
 class AuthDatabaseService {
   final dbHelper = DbHelper.helper;
 
@@ -28,10 +27,17 @@ class AuthDatabaseService {
     if (result.isNotEmpty) {
       final userId = result.first['id'] as int;
       final name = result.first['name'] as String;
+      final tempImage = result.first['image'] as String;
+      final email = result.first['email'] as String;
+      await dbClient.update(
+        'users',
+        {'is_logged': 0},
+      );
+      await dbClient.update('users', {'is_logged': 1},
+          where: 'id = ?', whereArgs: [userId]);
+      // ignore: use_build_context_synchronously
       Provider.of<AuthProvider>(context, listen: false)
-          .getCurrentUserId(userId);
-      Provider.of<AuthProvider>(context, listen: false)
-          .getCurrentUserName(name);
+          .getCurrentUserData(userId, name, email, tempImage);
       return AuthModel.fromMap(result.first);
     }
     return null;
@@ -56,14 +62,25 @@ class AuthDatabaseService {
     );
   }
 
-  Future<AuthModel?> getUserById(String email) async {
+  Future<void> logoutUser(int id) async {
     final dbClient = await dbHelper.database;
+    await dbClient!.update(
+      'users',
+      {'is_logged': 0},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<AuthModel?> getUserById() async {
+    final dbClient = await DbHelper.helper.database;
     List<Map<String, dynamic>> result = await dbClient!.query(
       'users',
-      where: 'email = ?',
-      whereArgs: [email],
+      where: 'is_logged = ?',
+      whereArgs: [1],
     );
     if (result.isNotEmpty) {
+      print(AuthModel.fromMap(result.first).id);
       return AuthModel.fromMap(result.first);
     }
     return null;

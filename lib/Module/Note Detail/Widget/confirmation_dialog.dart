@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 
+import '../../../Utils/Constant/Strings/strings.dart';
+
 class ConfirmationDialog extends StatefulWidget {
   final String text;
   final VoidCallback onTap;
@@ -24,12 +26,12 @@ class _ConfirmationDialogState extends State<ConfirmationDialog> {
                 Navigator.of(context).pop(false);
               },
               child: Text(
-                'CANCEL',
+                AppStrings.cancel2,
               )),
           ElevatedButton(
             onPressed: widget.onTap,
             child: Text(
-              'DELETE',
+              AppStrings.delete,
               style: TextStyle(color: AppColors.red),
             ),
           ),

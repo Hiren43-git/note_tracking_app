@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
-// import 'package:note_tracking_app/Core/Provider/List%20Note%20Provider/list_note_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Module/Simple%20Note/Screens/note_screen.dart';
 import 'package:note_tracking_app/Module/Welcome/Widget/text_widget.dart';
@@ -62,11 +61,14 @@ class _AddWidgetState extends State<AddWidget> {
                     provider.title.clear();
                     provider.description.clear();
                   },
-                  child: TextWidget(
-                    color: AppColors.text,
-                    size: 16,
-                    text: AppStrings.simpleNote,
-                    weight: FontWeight.w600,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: TextWidget(
+                      color: AppColors.text,
+                      size: 16,
+                      text: AppStrings.simpleNote,
+                      weight: FontWeight.w600,
+                    ),
                   ),
                 ),
                 SizedBox(
@@ -87,11 +89,14 @@ class _AddWidgetState extends State<AddWidget> {
                     listProvider.listTitle.clear();
                     listProvider.notesPointController.clear();
                   },
-                  child: TextWidget(
-                    color: AppColors.text,
-                    size: 16,
-                    text: AppStrings.list2,
-                    weight: FontWeight.w600,
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: TextWidget(
+                      color: AppColors.text,
+                      size: 16,
+                      text: AppStrings.list2,
+                      weight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
-import 'package:note_tracking_app/Module/Login%20Screen/Screens/login_screen.dart';
 import 'package:note_tracking_app/Module/Welcome/Widget/text_widget.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
@@ -41,13 +40,15 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                     shape: BoxShape.circle,
                     color: AppColors.textFieldBackground,
                     image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: (provider.image != null)
-                          ? FileImage(provider.image!)
-                          : AssetImage(
-                              'assets/Images/manager.png',
-                            ),
-                    ),
+                        fit: BoxFit.cover,
+                        image:
+                            (provider.currentUserImage.path == AppStrings.image)
+                                ? AssetImage(
+                                    AppStrings.image,
+                                  )
+                                : FileImage(
+                                    provider.currentUserImage,
+                                  )),
                   ),
                 ),
                 SizedBox(
@@ -67,7 +68,7 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                       TextWidget(
                         color: AppColors.title,
                         size: 13,
-                        text: provider.email.text,
+                        text: provider.currentUserEmail,
                         overflow: TextOverflow.ellipsis,
                         line: 2,
                       ),
@@ -88,32 +89,22 @@ class _ProfileWidgetState extends State<ProfileWidget> {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: AlertDialog(
-                      content: Text('Are You Sure you want to logout'),
+                      content: Text(AppStrings.confirmLogout),
                       actions: <Widget>[
                         ElevatedButton(
                             onPressed: () {
                               Navigator.of(context).pop(false);
                             },
                             child: Text(
-                              'cancel',
+                              AppStrings.cancel,
                             )),
                         ElevatedButton(
                           onPressed: () {
-                            provider.logout();
-                            provider.name.clear();
-                            provider.password.clear();
-                            provider.email.clear();
-                            provider.confirmPassword.clear();
-                            provider.image = null;
+                            provider.logout(context);
                             homeProvider.selectedIndexOfBottom = 0;
-                            Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(
-                                builder: (context) => LoginScreen(),
-                              ),
-                            );
                           },
                           child: Text(
-                            'Logout',
+                            AppStrings.logout,
                             style: TextStyle(color: AppColors.red),
                           ),
                         ),

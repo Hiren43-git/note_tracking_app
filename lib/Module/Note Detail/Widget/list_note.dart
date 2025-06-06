@@ -34,7 +34,7 @@ class _ListNotesState extends State<ListNotes> {
                   ? listProvider.listNotes[widget.index]
                   : null;
 
-              if (provider.notes.length <= widget.index) {
+              if (listProvider.listNotes.length <= widget.index) {
                 WidgetsBinding.instance.addPostFrameCallback(
                   (timeStamp) {
                     if (Navigator.of(context).canPop()) {
@@ -52,6 +52,8 @@ class _ListNotesState extends State<ListNotes> {
                 );
                 return SizedBox();
               }
+              provider.viewMoreSize(
+                  listProvider.listNotes[widget.index].pointStyle.fontSize!);
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -63,8 +65,7 @@ class _ListNotesState extends State<ListNotes> {
                       showDialog(
                         context: context,
                         builder: (context) => ConfirmationDialog(
-                          text:
-                              'Are You Sure you want to delete this list note',
+                          text: AppStrings.confirmList,
                           onTap: () {
                             listProvider.getCurrentNoteId(widget.listNoteId!);
                             listProvider.deleteNote(
@@ -74,6 +75,20 @@ class _ListNotesState extends State<ListNotes> {
                           },
                         ),
                       );
+                    },
+                    onTap: () {
+                      provider.list = false;
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => NoteScreen(
+                            listNote: listProvider.listNotes[widget.index],
+                          ),
+                        ),
+                      );
+                      provider.list = true;
+                      provider.simple = false;
+                      listProvider.listTitle.clear();
+                      listProvider.notesPointController.clear();
                     },
                     child: Container(
                       width: double.infinity,
@@ -91,21 +106,6 @@ class _ListNotesState extends State<ListNotes> {
                               text: listProvider.listNotes[widget.index].title,
                               style: listProvider
                                   .listNotes[widget.index].titleStyles,
-                              onTap: () {
-                                provider.list = false;
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => NoteScreen(
-                                      listNote:
-                                          listProvider.listNotes[widget.index],
-                                    ),
-                                  ),
-                                );
-                                provider.list = true;
-                                provider.simple = false;
-                                listProvider.listTitle.clear();
-                                listProvider.notesPointController.clear();
-                              },
                             ),
                             SizedBox(
                               height: 6,
@@ -119,8 +119,6 @@ class _ListNotesState extends State<ListNotes> {
                             ),
                             RichText(
                               text: TextSpan(
-                                style: listProvider
-                                    .listNotes[widget.index].pointStyle,
                                 children: () {
                                   final result = trimText(
                                       listProvider
@@ -140,8 +138,20 @@ class _ListNotesState extends State<ListNotes> {
                                                     element.value.isEmpty) &&
                                                 element.value.trim().isNotEmpty,
                                           )
+                                          // .map(
+                                          //   (e) => '${e.value}',
+                                          // )
                                           .map(
-                                            (e) => '○ ${e.value}',
+                                            (e) => TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: '- ',
+                                                ),
+                                                TextSpan(
+                                                  text: e.value,
+                                                ),
+                                              ],
+                                            ),
                                           )
                                           .join('\n'),
                                       listProvider
@@ -168,20 +178,30 @@ class _ListNotesState extends State<ListNotes> {
                                                 element.value.trim().isNotEmpty,
                                           )
                                           .map(
-                                            (e) => '○ ${e.value}',
+                                            (e) => '${e.value}',
                                           )
                                           .join('\n')
                                       : result['text'] as String;
                                   final exist = result['exist'] as bool;
                                   return [
-                                    TextSpan(text: text),
+                                    TextSpan(
+                                      text: text,
+                                      style: listProvider
+                                          .listNotes[widget.index].pointStyle,
+                                    ),
                                     if (exist)
                                       TextSpan(
                                         text: expand
                                             ? AppStrings.viewLess
                                             : AppStrings.viewMore,
                                         style: listProvider
-                                            .listNotes[widget.index].pointStyle,
+                                            .listNotes[widget.index].pointStyle
+                                            .copyWith(
+                                          color: AppColors.viewMore,
+                                          fontSize: provider.viewMore,
+                                          decoration: TextDecoration.none,
+                                          fontWeight: FontWeight.normal,
+                                        ),
                                         recognizer: TapGestureRecognizer()
                                           ..onTap = () =>
                                               listProvider.listDescriptionShow(
@@ -217,6 +237,8 @@ class _ListNotesState extends State<ListNotes> {
                       shrinkWrap: true,
                       itemCount: subListNotes.length,
                       itemBuilder: (context, index) {
+                        provider.viewMoreSize(listProvider
+                            .subListNotes[index].pointStyle.fontSize!);
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -228,8 +250,7 @@ class _ListNotesState extends State<ListNotes> {
                                 showDialog(
                                   context: context,
                                   builder: (context) => ConfirmationDialog(
-                                    text:
-                                        'Are you sure you want to delete this sub list note',
+                                    text: AppStrings.confirmSubList,
                                     onTap: () {
                                       listProvider
                                           .getCurrentNoteId(widget.listNoteId!);
@@ -241,6 +262,18 @@ class _ListNotesState extends State<ListNotes> {
                                     },
                                   ),
                                 );
+                              },
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => NoteScreen(
+                                      subListNote: subListNotes[index],
+                                    ),
+                                  ),
+                                );
+                                provider.subSimple = false;
+                                provider.simple = false;
+                                provider.subList = true;
                               },
                               child: Container(
                                 width: double.infinity,
@@ -258,19 +291,6 @@ class _ListNotesState extends State<ListNotes> {
                                       CommonRawWidget(
                                         text: subListNotes[index].title,
                                         style: subListNotes[index].titleStyles,
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (context) => NoteScreen(
-                                                subListNote:
-                                                    subListNotes[index],
-                                              ),
-                                            ),
-                                          );
-                                          provider.subSimple = false;
-                                          provider.simple = false;
-                                          provider.subList = true;
-                                        },
                                       ),
                                       SizedBox(
                                         height: 6,
@@ -308,7 +328,7 @@ class _ListNotesState extends State<ListNotes> {
                                                               .isNotEmpty,
                                                     )
                                                     .map(
-                                                      (e) => '○ ${e.value}',
+                                                      (e) => '${e.value}',
                                                     )
                                                     .join('\n'),
                                                 listProvider.subListNotes[index]
@@ -337,7 +357,7 @@ class _ListNotesState extends State<ListNotes> {
                                                               .isNotEmpty,
                                                     )
                                                     .map(
-                                                      (e) => '○ ${e.value}',
+                                                      (e) => '${e.value}',
                                                     )
                                                     .join('\n')
                                                 : result['text'] as String;
@@ -352,7 +372,15 @@ class _ListNotesState extends State<ListNotes> {
                                                       : AppStrings.viewMore,
                                                   style: listProvider
                                                       .subListNotes[index]
-                                                      .pointStyle,
+                                                      .pointStyle
+                                                      .copyWith(
+                                                    color: AppColors.viewMore,
+                                                    fontSize: provider.viewMore,
+                                                    decoration:
+                                                        TextDecoration.none,
+                                                    fontWeight:
+                                                        FontWeight.normal,
+                                                  ),
                                                   recognizer: TapGestureRecognizer()
                                                     ..onTap = () => listProvider
                                                         .subListDescriptionShow(

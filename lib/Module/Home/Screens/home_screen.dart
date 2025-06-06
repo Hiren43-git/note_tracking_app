@@ -44,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<NoteProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
     final TextEditingController temp = TextEditingController(text: '');
     return DefaultTabController(
       length: 2,
@@ -102,6 +103,7 @@ class _HomeScreenState extends State<HomeScreen>
                 bottom: TabBar(
                   controller: tabController,
                   splashFactory: NoSplash.splashFactory,
+                  // ignore: deprecated_member_use
                   overlayColor: MaterialStateProperty.all(
                     AppColors.transparent,
                   ),
@@ -131,6 +133,8 @@ class _HomeScreenState extends State<HomeScreen>
                       child: GestureDetector(
                         onTap: () {
                           provider.edit = true;
+                          authProvider.tempImage =
+                              authProvider.currentUserImage;
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => WelcomeScreen(),
@@ -149,13 +153,19 @@ class _HomeScreenState extends State<HomeScreen>
         body: Consumer<NoteProvider>(
           builder: (context, value, child) {
             if (provider.selectedIndexOfBottom == 0) {
-              return TabBarView(
-                controller: tabController,
-                children: [
-                  NoteWidget(),
-                  ListWidget(),
-                ],
-              );
+              if (provider.isLoading) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else {
+                return TabBarView(
+                  controller: tabController,
+                  children: [
+                    NoteWidget(),
+                    ListWidget(),
+                  ],
+                );
+              }
             } else if (provider.selectedIndexOfBottom == 1) {
               return AddWidget();
             } else {
@@ -177,9 +187,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               child: BottomNavigationBar(
                 onTap: (int index) {
-                  setState(() {
-                    provider.selectedIndexOfBottom = index;
-                  });
+                  provider.bottomIndex(index);
                 },
                 currentIndex: provider.selectedIndexOfBottom,
                 items: [

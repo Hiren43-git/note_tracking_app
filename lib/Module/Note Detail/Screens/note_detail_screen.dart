@@ -30,6 +30,8 @@ class _NoteDetailScreenState extends State<NoteDetailScreen> {
           .loadSubNote(widget.noteId!);
     }
     if (widget.listNoteId != null) {
+      Provider.of<ListNoteProvider>(context, listen: false).loadNote(
+          Provider.of<AuthProvider>(context, listen: false).currentUserId!);
       Provider.of<ListNoteProvider>(context, listen: false)
           .loadSubNote(widget.listNoteId!);
     }

@@ -74,8 +74,9 @@ class _NoteWidgetState extends State<NoteWidget> {
                                 padding: const EdgeInsets.all(14.0),
                                 child: Image(
                                   fit: BoxFit.cover,
-                                  image:
-                                      AssetImage('assets/Images/Icons/add.png'),
+                                  image: AssetImage(
+                                    AppStrings.addIcon,
+                                  ),
                                 ),
                               ),
                             ),

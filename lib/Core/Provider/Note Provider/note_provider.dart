@@ -8,6 +8,7 @@ import 'package:note_tracking_app/Core/Model/Note%20Model/sub_note_model.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
 import 'package:provider/provider.dart';
 
+import '../../../Utils/Constant/Strings/strings.dart';
 import '../Auth Provider/auth_provider.dart';
 
 class NoteProvider extends ChangeNotifier {
@@ -19,8 +20,12 @@ class NoteProvider extends ChangeNotifier {
   List<SubNoteModel> subNotes = [];
   bool loading = false;
 
+  bool isLoading = false;
+
   Future<void> loadNote(int userId) async {
+    isLoading = true;
     notes = await noteDatabaseService.readNote(userId);
+    isLoading = false;
     notifyListeners();
   }
 
@@ -116,13 +121,13 @@ class NoteProvider extends ChangeNotifier {
   final FocusNode titleFocus = FocusNode();
   final FocusNode descriptionFocus = FocusNode();
 
-  String field = 'title';
+  String field = AppStrings.title;
 
   NoteProvider() {
     titleFocus.addListener(
       () {
         if (titleFocus.hasFocus) {
-          field = 'title';
+          field = AppStrings.title;
           notifyListeners();
         }
       },
@@ -130,7 +135,7 @@ class NoteProvider extends ChangeNotifier {
     descriptionFocus.addListener(
       () {
         if (descriptionFocus.hasFocus) {
-          field = 'description';
+          field = AppStrings.description;
           notifyListeners();
         }
       },
@@ -148,7 +153,7 @@ class NoteProvider extends ChangeNotifier {
   Color underlineColor = AppColors.text;
 
   void bold() {
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(
         fontWeight: titleStyles.fontWeight == FontWeight.bold
             ? FontWeight.normal
@@ -165,7 +170,7 @@ class NoteProvider extends ChangeNotifier {
   }
 
   void italic() {
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(
         fontStyle: titleStyles.fontStyle == FontStyle.italic
             ? FontStyle.normal
@@ -182,7 +187,7 @@ class NoteProvider extends ChangeNotifier {
   }
 
   void underline() {
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(
         decoration: titleStyles.decoration == TextDecoration.underline
             ? TextDecoration.none
@@ -201,7 +206,7 @@ class NoteProvider extends ChangeNotifier {
   }
 
   void h1() {
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(fontSize: 26);
     } else {
       desStyle = desStyle.copyWith(fontSize: 26);
@@ -210,7 +215,7 @@ class NoteProvider extends ChangeNotifier {
   }
 
   void h2() {
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(fontSize: 22);
     } else {
       desStyle = desStyle.copyWith(fontSize: 22);
@@ -219,7 +224,7 @@ class NoteProvider extends ChangeNotifier {
   }
 
   void h3() {
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(fontSize: 18);
     } else {
       desStyle = desStyle.copyWith(fontSize: 18);
@@ -230,12 +235,26 @@ class NoteProvider extends ChangeNotifier {
   void setColor(Color color) {
     textColor = color;
     underlineColor = color;
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(color: color);
     } else {
       desStyle = desStyle.copyWith(color: color);
     }
     notifyListeners();
+  }
+
+  double viewMore = 26;
+
+  void viewMoreSize(double size) {
+    if (size == 26) {
+      viewMore = 20;
+    }
+    if (size == 22) {
+      viewMore = 17;
+    }
+    if (size == 18) {
+      viewMore = 14;
+    }
   }
 
   void clearStyle() {
@@ -306,14 +325,17 @@ class NoteProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  List currentIndex = [[]];
-
   List<SubNoteModel> getSubNotes(int noteId) {
     return subNotes
         .where(
           (element) => element.noteId == noteId,
         )
         .toList();
+  }
+
+  void bottomIndex(int index) {
+    selectedIndexOfBottom = index;
+    notifyListeners();
   }
 
   Future<void> addNoteInSimpleOrSubSimple(
@@ -324,7 +346,7 @@ class NoteProvider extends ChangeNotifier {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Add note data !',
+            AppStrings.addNoteData,
           ),
           backgroundColor: AppColors.button,
         ),
@@ -395,5 +417,6 @@ class NoteProvider extends ChangeNotifier {
       }
     }
     simple = true;
+    subSimple = false;
   }
 }

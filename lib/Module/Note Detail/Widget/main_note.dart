@@ -49,6 +49,8 @@ class _MainNotesState extends State<MainNotes> {
                 );
                 return SizedBox();
               }
+              provider.viewMoreSize(
+                  provider.notes[widget.index].desStyle.fontSize!);
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -60,7 +62,7 @@ class _MainNotesState extends State<MainNotes> {
                       showDialog(
                         context: context,
                         builder: (context) => ConfirmationDialog(
-                          text: 'Are You sure you want to delete this note',
+                          text: AppStrings.confirmNote,
                           onTap: () {
                             provider.getCurrentNoteId(widget.noteId!);
                             provider.deleteNote(
@@ -69,6 +71,18 @@ class _MainNotesState extends State<MainNotes> {
                           },
                         ),
                       );
+                    },
+                    onTap: () {
+                      provider.simple = false;
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => NoteScreen(
+                            note: provider.notes[widget.index],
+                          ),
+                        ),
+                      );
+                      provider.simple = true;
+                      provider.list = false;
                     },
                     child: Container(
                       width: double.infinity,
@@ -85,18 +99,6 @@ class _MainNotesState extends State<MainNotes> {
                             CommonRawWidget(
                               text: provider.notes[widget.index].title,
                               style: provider.notes[widget.index].titleStyles,
-                              onTap: () {
-                                provider.simple = false;
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => NoteScreen(
-                                      note: provider.notes[widget.index],
-                                    ),
-                                  ),
-                                );
-                                provider.simple = true;
-                                provider.list = false;
-                              },
                             ),
                             SizedBox(
                               height: 6,
@@ -130,7 +132,13 @@ class _MainNotesState extends State<MainNotes> {
                                             ? AppStrings.viewLess
                                             : AppStrings.viewMore,
                                         style: provider
-                                            .notes[widget.index].desStyle,
+                                            .notes[widget.index].desStyle
+                                            .copyWith(
+                                          decoration: TextDecoration.none,
+                                          fontSize: provider.viewMore,
+                                          color: AppColors.viewMore,
+                                          fontWeight: FontWeight.normal,
+                                        ),
                                         recognizer: TapGestureRecognizer()
                                           ..onTap =
                                               () => provider.descriptionShow(
@@ -164,6 +172,8 @@ class _MainNotesState extends State<MainNotes> {
                       shrinkWrap: true,
                       itemCount: subNotes.length,
                       itemBuilder: (context, index) {
+                        provider
+                            .viewMoreSize(subNotes[index].desStyle.fontSize!);
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -175,8 +185,7 @@ class _MainNotesState extends State<MainNotes> {
                                 showDialog(
                                   context: context,
                                   builder: (context) => ConfirmationDialog(
-                                    text:
-                                        'Are You sure you want to delete this sub note',
+                                    text: AppStrings.confirmSubNote,
                                     onTap: () {
                                       provider.getCurrentNoteId(widget.noteId!);
                                       provider
@@ -186,6 +195,18 @@ class _MainNotesState extends State<MainNotes> {
                                     },
                                   ),
                                 );
+                              },
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => NoteScreen(
+                                      subNote: subNotes[index],
+                                    ),
+                                  ),
+                                );
+                                provider.subSimple = true;
+                                provider.list = false;
+                                provider.subList = false;
                               },
                               child: Container(
                                 width: double.infinity,
@@ -202,18 +223,6 @@ class _MainNotesState extends State<MainNotes> {
                                     children: [
                                       CommonRawWidget(
                                         text: subNotes[index].title,
-                                        onTap: () {
-                                          Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (context) => NoteScreen(
-                                                subNote: subNotes[index],
-                                              ),
-                                            ),
-                                          );
-                                          provider.subSimple = true;
-                                          provider.list = false;
-                                          provider.subList = false;
-                                        },
                                         style: subNotes[index].titleStyles,
                                       ),
                                       SizedBox(
@@ -248,8 +257,18 @@ class _MainNotesState extends State<MainNotes> {
                                                   text: expand
                                                       ? AppStrings.viewLess
                                                       : AppStrings.viewMore,
-                                                  style:
-                                                      subNotes[index].desStyle,
+                                                  style: subNotes[index]
+                                                      .desStyle
+                                                      .copyWith(
+                                                        decoration:
+                                                            TextDecoration.none,
+                                                        color:
+                                                            AppColors.viewMore,
+                                                        fontSize:
+                                                            provider.viewMore,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                      ),
                                                   recognizer:
                                                       TapGestureRecognizer()
                                                         ..onTap = () => provider

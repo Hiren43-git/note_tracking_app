@@ -1,5 +1,3 @@
-// import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
@@ -50,6 +48,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 padding: const EdgeInsets.only(left: 8.0),
                 child: GestureDetector(
                   onTap: () {
+                    authProvider.tempImage = authProvider.currentUserImage;
                     Navigator.of(context).pop();
                   },
                   child: Icon(
@@ -76,183 +75,272 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           ),
           child: Form(
             key: key,
-            child: SingleChildScrollView(
-              controller: singleController,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    height: (provider.edit == false) ? 60 : 40,
-                  ),
-                  if (provider.edit == false) ...[
-                    TextWidget(
+            child: Consumer(
+              builder: (context, value, child) {
+                if (authProvider.isLoading) {
+                  return Center(
+                    child: CircularProgressIndicator(
                       color: AppColors.title,
-                      size: 46,
-                      text: AppStrings.remind,
-                      weight: FontWeight.bold,
                     ),
-                    TextWidget(
-                      color: AppColors.noteTaking,
-                      size: 16,
-                      text: AppStrings.notetaking,
-                      weight: FontWeight.bold,
-                    ),
-                    SizedBox(
-                      height: height * 0.09,
-                    ),
-                  ],
-                  ImageWidget(),
-                  SizedBox(
-                    height: height * 0.02,
-                  ),
-                  SizedBox(
-                    height: 16,
-                  ),
-                  TextFieldWidget(
-                    controller: authProvider.name,
-                    validator: (value) => value == null || value.isEmpty
-                        ? AppStrings.enterName
-                        : null,
-                    text: AppStrings.name,
-                    hint: AppStrings.name,
-                  ),
-                  SizedBox(
-                    height: 16,
-                  ),
-                  if (provider.edit == true) ...[
-                    TextFieldWidget(
-                      controller: authProvider.email,
-                      text: AppStrings.email,
-                      read: true,
-                    ),
-                  ],
-                  if (provider.edit == false) ...[
-                    TextFieldWidget(
-                      validator: (value) {
-                        if (value!.isNotEmpty) {
-                          if (authProvider.validEmail(value)) {
-                            authProvider.validEmail(value);
-                          } else {
-                            authProvider.errorMessage(
-                              context,
-                              AppStrings.invalidEmail,
-                            );
-                          }
-                        } else {
-                          return AppStrings.enterEmail;
-                        }
-                        return null;
-                      },
-                      controller: authProvider.email,
-                      text: AppStrings.email,
-                      hint: AppStrings.emailText,
-                    ),
-                  ],
-                  if (provider.edit == false) ...[
-                    SizedBox(
-                      height: 16,
-                    ),
-                    TextFieldWidget(
-                      validator: (value) {
-                        if (value!.isNotEmpty) {
-                          if (authProvider.validPassword(value)) {
-                            authProvider.validPassword(value);
-                          } else {
-                            authProvider.errorMessage(
-                              context,
-                              AppStrings.invalidPassword,
-                            );
-                            return AppStrings.passwordRequire;
-                          }
-                        } else {
-                          return AppStrings.enterPassword;
-                        }
-                        return null;
-                      },
-                      controller: authProvider.password,
-                      text: AppStrings.password,
-                      hint: AppStrings.passwordText,
-                      hide: true,
-                    ),
-                    SizedBox(
-                      height: 16,
-                    ),
-                    TextFieldWidget(
-                      validator: (value) {
-                        if (value!.isNotEmpty) {
-                          value != authProvider.password.text
-                              ? authProvider.errorMessage(
-                                  context,
-                                  AppStrings.passwordNotMatch,
-                                )
-                              : AppStrings.passwordRequire;
-                        } else {
-                          return AppStrings.enterRepeatPassword;
-                        }
-                        return null;
-                      },
-                      controller: authProvider.confirmPassword,
-                      text: AppStrings.repeatPassword,
-                      hint: AppStrings.passwordText,
-                      conHide: true,
-                    ),
-                  ],
-                  SizedBox(
-                    height: 38,
-                  ),
-                  GestureDetector(
-                    onTap: () async {
-                      if (provider.edit == false) {
-                        if (key.currentState!.validate()) {
-                          authProvider.validForSignUp(context);
-                        }
-                      } else {
-                        if (key.currentState!.validate()) {
-                          authProvider.validForEditProfile(context);
-                        }
-                      }
-                    },
-                    child: ButtonWidget(
-                      text: (provider.edit == false)
-                          ? AppStrings.start
-                          : AppStrings.save,
-                    ),
-                  ),
-                  if (provider.edit == false) ...[
-                    SizedBox(
-                      height: 12,
-                    ),
-                    DividerWidget(),
-                    SizedBox(
-                      height: 12,
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (context) => LoginScreen(),
+                  );
+                } else {
+                  return SingleChildScrollView(
+                    controller: singleController,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          height: (provider.edit == false) ? 60 : 40,
+                        ),
+                        if (provider.edit == false) ...[
+                          TextWidget(
+                            color: AppColors.title,
+                            size: 46,
+                            text: AppStrings.remind,
+                            weight: FontWeight.bold,
                           ),
-                        );
-                        authProvider.email.clear();
-                        authProvider.password.clear();
-                        authProvider.confirmPassword.clear();
-                        authProvider.name.clear();
-                        authProvider.image = null;
-                      },
-                      child: Builder(
-                        builder: (context) {
-                          return ButtonWidget(
-                            text: AppStrings.login,
-                          );
-                        },
-                      ),
+                          TextWidget(
+                            color: AppColors.noteTaking,
+                            size: 16,
+                            text: AppStrings.notetaking,
+                            weight: FontWeight.bold,
+                          ),
+                          SizedBox(
+                            height: height * 0.09,
+                          ),
+                          SizedBox(
+                            height: height * 0.02,
+                          ),
+                          ImageWidget(
+                            image: DecorationImage(
+                              fit: BoxFit.cover,
+                              image: (authProvider.image != null)
+                                  ? FileImage(authProvider.image!)
+                                  : AssetImage(
+                                      AppStrings.image,
+                                    ),
+                            ),
+                          ),
+                        ],
+                        if (provider.edit == true)
+                          ImageWidget(
+                            image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: (authProvider.tempImage.path ==
+                                        AppStrings.image)
+                                    ? AssetImage(AppStrings.image)
+                                    : FileImage(
+                                        authProvider.tempImage,
+                                      )),
+                          ),
+                        SizedBox(
+                          height: 16,
+                        ),
+                        TextFieldWidget(
+                          controller: authProvider.name,
+                          validator: (value) => value == null || value.isEmpty
+                              ? AppStrings.enterName
+                              : null,
+                          text: AppStrings.name,
+                          hint: AppStrings.name,
+                          focus: authProvider.nameFocus,
+                          onSubmitted: (value) {
+                            FocusScope.of(context)
+                                .requestFocus(authProvider.emailFocus);
+                          },
+                        ),
+                        SizedBox(
+                          height: 16,
+                        ),
+                        if (provider.edit == true) ...[
+                          TextFieldWidget(
+                            hint: authProvider.currentUserEmail,
+                            controller: authProvider.email,
+                            text: AppStrings.email,
+                            read: true,
+                          ),
+                        ],
+                        if (provider.edit == false) ...[
+                          TextFieldWidget(
+                            validator: (value) {
+                              if (value!.isNotEmpty) {
+                                if (authProvider.validEmail(value)) {
+                                  authProvider.validEmail(value);
+                                } else {
+                                  authProvider.errorMessage(
+                                    context,
+                                    AppStrings.invalidEmail,
+                                  );
+                                }
+                              } else {
+                                return AppStrings.enterEmail;
+                              }
+                              return null;
+                            },
+                            focus: authProvider.emailFocus,
+                            controller: authProvider.email,
+                            text: AppStrings.email,
+                            hint: AppStrings.emailText,
+                            onSubmitted: (value) {
+                              FocusScope.of(context)
+                                  .requestFocus(authProvider.passwordFocus);
+                            },
+                            onChange: (value) {
+                              if (value != null && value.endsWith(' ')) {
+                                final trimmed = value.trimRight();
+                                authProvider.email.text = trimmed;
+                                authProvider.email.selection =
+                                    TextSelection.fromPosition(
+                                  TextPosition(
+                                    offset: authProvider.email.text.length,
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                        if (provider.edit == false) ...[
+                          SizedBox(
+                            height: 16,
+                          ),
+                          TextFieldWidget(
+                            validator: (value) {
+                              if (value!.isNotEmpty) {
+                                if (authProvider.validPassword(value)) {
+                                  authProvider.validPassword(value);
+                                } else {
+                                  authProvider.errorMessage(
+                                    context,
+                                    AppStrings.invalidPassword,
+                                  );
+                                  return AppStrings.passwordRequire;
+                                }
+                              } else {
+                                return AppStrings.enterPassword;
+                              }
+                              return null;
+                            },
+                            focus: authProvider.passwordFocus,
+                            controller: authProvider.password,
+                            text: AppStrings.password,
+                            hint: AppStrings.passwordText,
+                            hide: true,
+                            onSubmitted: (value) {
+                              FocusScope.of(context).requestFocus(
+                                authProvider.confirmPasswordFocus,
+                              );
+                            },
+                            onChange: (value) {
+                              if (value != null && value.endsWith(' ')) {
+                                final trimmed = value.trimRight();
+                                authProvider.password.text = trimmed;
+                                authProvider.password.selection =
+                                    TextSelection.fromPosition(
+                                  TextPosition(
+                                    offset: authProvider.password.text.length,
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                          SizedBox(
+                            height: 16,
+                          ),
+                          TextFieldWidget(
+                            validator: (value) {
+                              if (value!.isNotEmpty) {
+                                value != authProvider.password.text
+                                    ? authProvider.errorMessage(
+                                        context,
+                                        AppStrings.passwordNotMatch,
+                                      )
+                                    : AppStrings.passwordRequire;
+                              } else {
+                                return AppStrings.enterRepeatPassword;
+                              }
+                              return null;
+                            },
+                            controller: authProvider.confirmPassword,
+                            text: AppStrings.repeatPassword,
+                            hint: AppStrings.passwordText,
+                            conHide: true,
+                            focus: authProvider.confirmPasswordFocus,
+                            onChange: (value) {
+                              if (value != null && value.endsWith(' ')) {
+                                final trimmed = value.trimRight();
+                                authProvider.confirmPassword.text = trimmed;
+                                authProvider.confirmPassword.selection =
+                                    TextSelection.fromPosition(
+                                  TextPosition(
+                                    offset: authProvider
+                                        .confirmPassword.text.length,
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                        SizedBox(
+                          height: 38,
+                        ),
+                        GestureDetector(
+                          onTap: () async {
+                            if (provider.edit == false) {
+                              if (key.currentState!.validate()) {
+                                authProvider.validForSignUp(context);
+                              }
+                            } else {
+                              if (key.currentState!.validate()) {
+                                authProvider.validForEditProfile(context);
+                              }
+                            }
+                          },
+                          child: ButtonWidget(
+                            text: (provider.edit == false)
+                                ? AppStrings.start
+                                : AppStrings.save,
+                          ),
+                        ),
+                        if (provider.edit == false) ...[
+                          SizedBox(
+                            height: 12,
+                          ),
+                          DividerWidget(),
+                          SizedBox(
+                            height: 12,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (context) => LoginScreen(),
+                                ),
+                              );
+                              authProvider.email.clear();
+                              authProvider.password.clear();
+                              authProvider.confirmPassword.clear();
+                              authProvider.passwordShow = false;
+                              authProvider.conPasswordShow = false;
+                              authProvider.name.clear();
+                              authProvider.image = null;
+                            },
+                            child: Builder(
+                              builder: (context) {
+                                return ButtonWidget(
+                                  text: AppStrings.login,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                        SizedBox(
+                          height: 6,
+                        ),
+                      ],
                     ),
-                  ],
-                  SizedBox(
-                    height: 6,
-                  ),
-                ],
-              ),
+                  );
+                }
+              },
             ),
           ),
         ),

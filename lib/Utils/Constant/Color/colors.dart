@@ -12,6 +12,7 @@ class AppColors {
   static Color detailCardDivider = Colors.grey.shade100;
   static Color transparent = Colors.transparent;
   static Color divider = Colors.grey.shade300;
+  static Color viewMore = Colors.grey.shade300;
   static Color styleColor = Colors.pink.shade100;
   static Color styleColor2 = Colors.blue.shade100;
   static Color styleColor3 = Colors.orange.shade100;

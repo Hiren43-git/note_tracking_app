@@ -20,7 +20,7 @@ class DbHelper {
       onCreate: (db, version) async {
         print('created------------');
         await db.execute('''
-        CREATE TABLE users (id INTEGER PRIMARY KEY ,name TEXT,email TEXT, password TEXT,image Text)
+        CREATE TABLE users (id INTEGER PRIMARY KEY ,name TEXT,email TEXT, password TEXT,image Text,is_logged INTEGER DEFAULT 0)
       ''');
         await db.execute('''
         CREATE TABLE notes (id INTEGER PRIMARY KEY ,userId INTEGER,title TEXT,description TEXT,titleStyle TEXT,descriptionStyle TEXT)

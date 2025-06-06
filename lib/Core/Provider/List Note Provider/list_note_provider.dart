@@ -8,6 +8,7 @@ import 'package:note_tracking_app/Core/Model/List%20Note%20Model/sub_list_model.
 import 'package:note_tracking_app/Core/Provider/Auth%20Provider/auth_provider.dart';
 import 'package:note_tracking_app/Core/Provider/Note%20Provider/note_provider.dart';
 import 'package:note_tracking_app/Utils/Constant/Color/colors.dart';
+import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
 import 'package:provider/provider.dart';
 
 class ListNoteProvider extends ChangeNotifier {
@@ -105,9 +106,35 @@ class ListNoteProvider extends ChangeNotifier {
   List pointFocus = [FocusNode()];
   List notesPointController = [TextEditingController()];
 
-  void addPoint(int index) {
-    pointFocus.insert(index + 1, FocusNode());
-    notesPointController.insert(index + 1, TextEditingController());
+  void addPoint(int index, BuildContext context) {
+    final empty = notesPointController.any(
+      (element) => element.text.isEmpty,
+    );
+    if (empty) {
+      return;
+    }
+    while (notesPointController.length <= index + 1) {
+      notesPointController.add(TextEditingController());
+    }
+    while (pointFocus.length <= index + 1) {
+      pointFocus.add(FocusNode());
+    }
+    notifyListeners();
+
+    Future.delayed(Duration(milliseconds: 120), () {
+      if (index + 1 < pointFocus.length) {
+        FocusScope.of(context).requestFocus(
+          pointFocus[index + 1],
+        );
+      }
+    });
+  }
+
+  bool call = false;
+  void addFirstPoint() {
+    call = true;
+    notesPointController.insert(0, TextEditingController());
+    pointFocus.insert(0, FocusNode());
     notifyListeners();
   }
 
@@ -121,6 +148,19 @@ class ListNoteProvider extends ChangeNotifier {
     }
   }
 
+  ListNoteProvider() {
+    titleFocus.addListener(
+      () {
+        if (titleFocus.hasFocus) {
+          field = AppStrings.title;
+          notifyListeners();
+        } else {
+          field = AppStrings.point;
+          notifyListeners();
+        }
+      },
+    );
+  }
   void disposePoint() {
     for (var node in pointFocus) {
       node.dispose();
@@ -132,13 +172,13 @@ class ListNoteProvider extends ChangeNotifier {
     notesPointController.clear();
   }
 
-  String field = 'title';
+  String field = AppStrings.title;
   Color textColor = AppColors.text;
   Color pointColor = AppColors.text;
   Color underlineColor = AppColors.text;
 
   void bold() {
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(
         fontWeight: titleStyles.fontWeight == FontWeight.bold
             ? FontWeight.normal
@@ -155,7 +195,7 @@ class ListNoteProvider extends ChangeNotifier {
   }
 
   void italic() {
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(
         fontStyle: titleStyles.fontStyle == FontStyle.italic
             ? FontStyle.normal
@@ -172,7 +212,7 @@ class ListNoteProvider extends ChangeNotifier {
   }
 
   void underline() {
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(
         decoration: titleStyles.decoration == TextDecoration.underline
             ? TextDecoration.none
@@ -191,7 +231,7 @@ class ListNoteProvider extends ChangeNotifier {
   }
 
   void h1() {
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(fontSize: 26);
     } else {
       pointStyle = pointStyle.copyWith(fontSize: 26);
@@ -200,7 +240,7 @@ class ListNoteProvider extends ChangeNotifier {
   }
 
   void h2() {
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(fontSize: 22);
     } else {
       pointStyle = pointStyle.copyWith(fontSize: 22);
@@ -209,7 +249,7 @@ class ListNoteProvider extends ChangeNotifier {
   }
 
   void h3() {
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(fontSize: 18);
     } else {
       pointStyle = pointStyle.copyWith(fontSize: 18);
@@ -220,7 +260,7 @@ class ListNoteProvider extends ChangeNotifier {
   void setColor(Color color) {
     textColor = color;
     underlineColor = color;
-    if (field == 'title') {
+    if (field == AppStrings.title) {
       titleStyles = titleStyles.copyWith(color: color);
     } else {
       pointColor = color;
@@ -241,7 +281,7 @@ class ListNoteProvider extends ChangeNotifier {
     underlineColor = AppColors.text;
     pointStyle = TextStyle(
         fontSize: 26, color: AppColors.text, decoration: TextDecoration.none);
-    field = 'title';
+    field = AppStrings.title;
     notifyListeners();
   }
 
@@ -305,6 +345,18 @@ class ListNoteProvider extends ChangeNotifier {
         .toList();
   }
 
+  void temp() {
+    notifyListeners();
+  }
+
+  void tempField(String tempField) {
+    field = tempField;
+  }
+
+  void tempPoint() {
+    field = AppStrings.point;
+  }
+
   Future<void> addNoteInListNoteOrSubListNote(BuildContext context,
       SubListNoteModel? subListNote, ListNoteModel? listNote) async {
     final provider = Provider.of<NoteProvider>(context, listen: false);
@@ -313,7 +365,7 @@ class ListNoteProvider extends ChangeNotifier {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Add note data !',
+            AppStrings.addNoteData,
           ),
           backgroundColor: AppColors.button,
         ),
@@ -322,15 +374,19 @@ class ListNoteProvider extends ChangeNotifier {
       if (provider.subList == true) {
         provider.list = false;
         if (subListNote != null) {
+          final temp = notesPointController
+              .map(
+                (e) => e.text,
+              )
+              .where(
+                (element) => element.isNotEmpty,
+              )
+              .toList();
           final update = SubListNoteModel(
             id: subListNote.id,
             listNoteId: currentNoteId,
             title: listTitle.text,
-            points: notesPointController
-                .map(
-                  (e) => e.text,
-                )
-                .toList(),
+            points: temp,
             titleStyle: ListNoteModel.styleToJson(titleStyles),
             pointsStyle: ListNoteModel.styleToJson(pointStyle),
           );
@@ -342,15 +398,19 @@ class ListNoteProvider extends ChangeNotifier {
           }
           await loadSubNote(currentNoteId);
         } else {
+          final temp = notesPointController
+              .map(
+                (e) => e.text,
+              )
+              .where(
+                (element) => element.isNotEmpty,
+              )
+              .toList();
           addSubNotes(
             SubListNoteModel(
               listNoteId: currentNoteId,
               title: listTitle.text,
-              points: notesPointController
-                  .map(
-                    (e) => e.text,
-                  )
-                  .toList(),
+              points: temp,
               titleStyle: ListNoteModel.styleToJson(titleStyles),
               pointsStyle: ListNoteModel.styleToJson(pointStyle),
             ),
@@ -370,15 +430,19 @@ class ListNoteProvider extends ChangeNotifier {
       }
       if (provider.list == true) {
         if (listNote != null) {
+          final temp = notesPointController
+              .map(
+                (e) => e.text,
+              )
+              .where(
+                (element) => element.isNotEmpty,
+              )
+              .toList();
           final update = ListNoteModel(
             id: listNote.id,
             userId: listNote.userId,
             title: listTitle.text,
-            points: notesPointController
-                .map(
-                  (e) => e.text,
-                )
-                .toList(),
+            points: temp,
             titleStyle: ListNoteModel.styleToJson(titleStyles),
             pointsStyle: ListNoteModel.styleToJson(pointStyle),
           );
@@ -389,15 +453,19 @@ class ListNoteProvider extends ChangeNotifier {
             clearStyle();
           }
         } else {
+          final temp = notesPointController
+              .map(
+                (e) => e.text,
+              )
+              .where(
+                (element) => element.isNotEmpty,
+              )
+              .toList();
           addNotes(
             ListNoteModel(
               userId: authProvider.currentUserId!,
               title: listTitle.text,
-              points: notesPointController
-                  .map(
-                    (e) => e.text,
-                  )
-                  .toList(),
+              points: temp,
               titleStyle: ListNoteModel.styleToJson(titleStyles),
               pointsStyle: ListNoteModel.styleToJson(pointStyle),
             ),
@@ -416,5 +484,6 @@ class ListNoteProvider extends ChangeNotifier {
       }
     }
     provider.list = true;
+    provider.subList = false;
   }
 }

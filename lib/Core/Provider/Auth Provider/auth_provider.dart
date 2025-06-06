@@ -1,11 +1,15 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:note_tracking_app/Core/Database%20Service/Auth%20Database%20Service/auth_database_service.dart';
 import 'package:note_tracking_app/Core/Model/Auth%20Model/auth_model.dart';
 import 'package:note_tracking_app/Module/Login%20Screen/Screens/login_screen.dart';
 import 'package:note_tracking_app/Utils/Constant/Strings/strings.dart';
+import 'package:path_provider/path_provider.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthDatabaseService authDatabaseService = AuthDatabaseService();
@@ -23,10 +27,25 @@ class AuthProvider extends ChangeNotifier {
       String email, String password, BuildContext context) async {
     final user = await authDatabaseService.loginUser(email, password, context);
     if (user != null) {
+      currentUserId = user.id;
+      currentUserImage = File(user.image);
+      currentUserEmail = user.email;
+      currentUserName = user.name;
       notifyListeners();
       return true;
     }
     return false;
+  }
+
+  Future<void> checkLogin() async {
+    final user = await authDatabaseService.getUserById();
+    if (user != null) {
+      currentUserId = user.id;
+      currentUserImage = File(user.image);
+      currentUserEmail = user.email;
+      currentUserName = user.name;
+      notifyListeners();
+    }
   }
 
   bool passwordShow = false;
@@ -57,6 +76,7 @@ class AuthProvider extends ChangeNotifier {
         validPassword(password.text) &&
         password.text == confirmPassword.text &&
         name.text.isNotEmpty) {
+      name.text = name.text.trimRight();
       final user = AuthModel(
         name: name.text,
         email: email.text,
@@ -82,6 +102,8 @@ class AuthProvider extends ChangeNotifier {
         password.clear();
         confirmPassword.clear();
         name.clear();
+        passwordShow = false;
+        conPasswordShow = false;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -95,14 +117,17 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> validForEditProfile(BuildContext context) async {
-    if (validEmail(email.text) && name.text.isNotEmpty) {
+    if (name.text.isNotEmpty) {
       currentUserName = name.text;
+      currentUserImage = tempImage;
+      print(currentUserImage.path);
       final update = AuthModel(
         id: currentUserId,
         name: currentUserName,
         email: email.text,
         password: password.text,
-        image: (image != null) ? image!.path : AppStrings.image,
+        image: currentUserImage.path,
+        is_logged: 1,
       );
       await updateUser(update);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -125,19 +150,51 @@ class AuthProvider extends ChangeNotifier {
   }
 
   int? currentUserId = 0;
-  void getCurrentUserId(int id) {
-    currentUserId = id;
-    notifyListeners();
-  }
-
   String currentUserName = '';
-  void getCurrentUserName(String name) {
+  String currentUserEmail = '';
+  File currentUserImage = File('');
+  File tempImage = File('');
+
+  void getCurrentUserData(
+      int id, String name, String email, String image) async {
+    currentUserId = id;
     currentUserName = name;
+    currentUserEmail = email;
+    if (image == 'assets/Images/manager.png') {
+      final byteData = await rootBundle.load(image);
+
+      final file = File('${(await getTemporaryDirectory()).path}/$image');
+      await file.create(recursive: true);
+      await file.writeAsBytes(byteData.buffer
+          .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+      currentUserImage = File(file.path);
+    } else {
+      currentUserImage = File(image);
+    }
     notifyListeners();
   }
 
-  Future<void> logout() async {
-    currentUserId = null;
+  Future<void> logout(BuildContext context) async {
+    if (currentUserId != null || currentUserId != 0) {
+      await authDatabaseService.logoutUser(currentUserId!);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppStrings.logOutSuccess,
+          ),
+        ),
+      );
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(),
+        ),
+      );
+      name.clear();
+      password.clear();
+      email.clear();
+      confirmPassword.clear();
+      image = null;
+    }
     notifyListeners();
   }
 
@@ -150,9 +207,18 @@ class AuthProvider extends ChangeNotifier {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   TextEditingController confirmPassword = TextEditingController();
+
+  FocusNode nameFocus = FocusNode();
+  FocusNode emailFocus = FocusNode();
+  FocusNode passwordFocus = FocusNode();
+  FocusNode confirmPasswordFocus = FocusNode();
   File? image;
 
+  bool isLoading = false;
   Future<void> pickImage() async {
+    isLoading = true;
+    notifyListeners();
+
     final pick = await ImagePicker().pickImage(
       source: ImageSource.gallery,
     );
@@ -160,7 +226,9 @@ class AuthProvider extends ChangeNotifier {
       image = File(
         pick.path,
       );
+      tempImage = image!;
     }
+    isLoading = false;
     notifyListeners();
   }
 
